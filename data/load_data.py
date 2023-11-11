@@ -5,15 +5,15 @@ import torch
 import numpy as np
 
 
-def load_data(n=None):
+def load_data(n=None, _print=False, device="cpu"):
     f = os.path.join(os.getcwd(), "data", "dataset_ts_light_version.hdf5")
 
     # Opening dataset from HDF5 binary file
     # Initiating File object
     # Opening file in reading mode by 'r'
     with h5py.File(
-            f,
-            "r",
+        f,
+        "r",
     ) as f:
         # Showing all keys in the HDF5 binary file
         # print(list(f.keys()))
@@ -52,15 +52,24 @@ def load_data(n=None):
         x_validation = np.transpose(x_validation, (0, 3, 1, 2))
         x_test = np.transpose(x_test, (0, 3, 1, 2))
 
+        # Convert to tensor
+        x_train = torch.from_numpy(x_train).to(device)
+        y_train = torch.from_numpy(y_train).to(device)
+        x_validation = torch.from_numpy(x_validation).to(device)
+        y_validation = torch.from_numpy(y_validation).to(device)
+        x_test = torch.from_numpy(x_test).to(device)
+        y_test = torch.from_numpy(y_test).to(device)
+
     # Check point
     # Showing shapes of arrays after splitting
-    print(x_train.shape)
-    print(y_train.shape)
+    if _print:
+        print(x_train.shape)
+        print(y_train.shape)
 
-    print(x_validation.shape)
-    print(y_validation.shape)
+        print(x_validation.shape)
+        print(y_validation.shape)
 
-    print(x_test.shape)
-    print(y_test.shape)
+        print(x_test.shape)
+        print(y_test.shape)
 
     return x_train, y_train, x_validation, y_validation, x_test, y_test

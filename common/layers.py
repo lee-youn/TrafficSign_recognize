@@ -54,7 +54,7 @@ class Affine:
         # 텐서 대응
         self.original_x_shape = x.shape
         x = x.reshape(x.shape[0], -1)
-        self.x = x.type("torch.DoubleTensor")
+        self.x = x.type("torch.DoubleTensor").to(self.W.get_device())
 
         out = torch.matmul(self.x, self.W) + self.b
 
@@ -226,11 +226,10 @@ class Convolution:
         out_w = 1 + int((W + 2 * self.pad - FW) / self.stride)
 
         col = im2col(x, FH, FW, self.stride, self.pad)
-        col_W = self.W.reshape(FN, -1).T.type('torch.FloatTensor')
+        col_W = self.W.reshape(FN, -1).T.type("torch.FloatTensor").to(col.get_device())
 
         out = torch.matmul(col, col_W) + self.b
-        out = out.numpy().reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2)
-        out = torch.from_numpy(out)
+        out = out.reshape(N, out_h, out_w, -1).permute(0, 3, 1, 2)
 
         self.x = x
         self.col = col
@@ -240,8 +239,7 @@ class Convolution:
 
     def backward(self, dout):
         FN, C, FH, FW = self.W.shape
-        dout = dout.numpy().transpose(0, 2, 3, 1).reshape(-1, FN)
-        dout = torch.from_numpy(dout)
+        dout = dout.permute(0, 2, 3, 1).reshape(-1, FN)
 
         self.db = torch.sum(dout, dim=0)
         self.dW = torch.matmul(self.col.T, dout)
@@ -271,10 +269,9 @@ class Pooling:
         col = im2col(x, self.pool_h, self.pool_w, self.stride, self.pad)
         col = col.reshape(-1, self.pool_h * self.pool_w)
 
-        arg_max = np.argmax(col, axis=1)
+        arg_max = torch.argmax(col, dim=1)
         out = torch.max(col, dim=1)[0]
-        out = out.numpy().reshape(N, out_h, out_w, C).transpose(0, 3, 1, 2)
-        out = torch.from_numpy(out)
+        out = out.reshape(N, out_h, out_w, C).permute(0, 3, 1, 2)
 
         self.x = x
         self.arg_max = arg_max
@@ -282,12 +279,16 @@ class Pooling:
         return out
 
     def backward(self, dout):
-        dout = dout.numpy().transpose(0, 2, 3, 1)
-        dout = torch.from_numpy(dout)
+        dout = dout.permute(0, 2, 3, 1)
 
         pool_size = self.pool_h * self.pool_w
-        dmax = torch.zeros((dout.numpy().size, pool_size))
-        dmax[torch.arange(self.arg_max.numpy().size), self.arg_max.flatten()] = dout.flatten().float()
+
+        dmax = torch.zeros(
+            (dout.cpu().numpy().size, pool_size), device=dout.get_device()
+        )
+        dmax[
+            torch.arange(self.arg_max.cpu().numpy().size), self.arg_max.flatten()
+        ] = dout.flatten().float()
         dmax = dmax.reshape(dout.shape + (pool_size,))
 
         dcol = dmax.reshape(dmax.shape[0] * dmax.shape[1] * dmax.shape[2], -1)

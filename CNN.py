@@ -31,12 +31,13 @@ class CNN:
     """
 
     def __init__(
-            self,
-            input_dim=(3, 48, 48),
-            conv_param={"filter_num": 30, "filter_size": 5, "pad": 0, "stride": 1},
-            hidden_size=10000,
-            output_size=43,
-            weight_init_std=0.1,
+        self,
+        input_dim=(3, 48, 48),
+        conv_param={"filter_num": 30, "filter_size": 5, "pad": 0, "stride": 1},
+        hidden_size=10000,
+        output_size=43,
+        weight_init_std=0.1,
+        device="cpu",
     ):
         filter_num = conv_param["filter_num"]
         filter_size = conv_param["filter_size"]
@@ -44,8 +45,8 @@ class CNN:
         filter_stride = conv_param["stride"]
         input_size = input_dim[1]
         conv_output_size = (
-                                   input_size - filter_size + 2 * filter_pad
-                           ) / filter_stride + 1
+            input_size - filter_size + 2 * filter_pad
+        ) / filter_stride + 1
         pool_output_size = int(
             filter_num * (conv_output_size / 2) * (conv_output_size / 2)
         )
@@ -53,16 +54,22 @@ class CNN:
         # 가중치 초기화
         self.params = {}
         rgen = np.random.default_rng(43)
-        self.params["W1"] = weight_init_std * rgen.logistic(size=(filter_num, input_dim[0], filter_size, filter_size))
+        self.params["W1"] = weight_init_std * rgen.logistic(
+            size=(filter_num, input_dim[0], filter_size, filter_size)
+        )
         self.params["b1"] = np.zeros(filter_num)
-        self.params["W2"] = weight_init_std * rgen.logistic(size=(pool_output_size, hidden_size))
+        self.params["W2"] = weight_init_std * rgen.logistic(
+            size=(pool_output_size, hidden_size)
+        )
         self.params["b2"] = np.zeros(hidden_size)
-        self.params["W3"] = weight_init_std * rgen.logistic(size=(hidden_size, output_size))
+        self.params["W3"] = weight_init_std * rgen.logistic(
+            size=(hidden_size, output_size)
+        )
         self.params["b3"] = np.zeros(output_size)
 
         # 가중치를 tensor로 변경
         for key, value in self.params.items():
-            self.params[key] = torch.from_numpy(value)
+            self.params[key] = torch.from_numpy(value).to(device)
 
         # 계층 생성
         self.layers = OrderedDict()
@@ -104,11 +111,11 @@ class CNN:
         acc = 0.0
 
         for i in range(int(x.shape[0] / batch_size)):
-            tx = x[i * batch_size: (i + 1) * batch_size]
-            tt = t[i * batch_size: (i + 1) * batch_size]
+            tx = x[i * batch_size : (i + 1) * batch_size]
+            tt = t[i * batch_size : (i + 1) * batch_size]
             y = self.predict(tx)
             y = torch.argmax(y, dim=1)
-            acc += np.sum(y.numpy() == tt)
+            acc += np.sum(y.cpu().numpy() == tt)
 
         return acc / x.shape[0]
 
