@@ -141,7 +141,6 @@ class BatchNormalization:
         if x.ndim != 2:
             N, C, H, W = x.shape
             x = x.reshape(N, -1)
-
         out = self.__forward(x, train_flg)
 
         return out.reshape(*self.input_shape)
@@ -149,14 +148,15 @@ class BatchNormalization:
     def __forward(self, x, train_flg):
         if self.running_mean is None:
             N, D = x.shape
-            self.running_mean = np.zeros(D)
-            self.running_var = np.zeros(D)
+            self.running_mean = torch.zeros(D)
+            self.running_var = torch.zeros(D)
+            #위의 두 줄 기존 np.zeros(D) 텐서 대응
 
         if train_flg:
             mu = x.mean(axis=0)
             xc = x - mu
-            var = np.mean(xc**2, axis=0)
-            std = np.sqrt(var + 10e-7)
+            var = torch.mean(xc**2, dim=0)  # np.mean(xc**2, axis=0)
+            std = torch.sqrt(var + 10e-7)   # np.sqrt(var + 10e-7)
             xn = xc / std
 
             self.batch_size = x.shape[0]
@@ -171,7 +171,7 @@ class BatchNormalization:
             )
         else:
             xc = x - self.running_mean
-            xn = xc / ((np.sqrt(self.running_var + 10e-7)))
+            xn = xc / ((torch.sqrt(self.running_var + 10e-7))) #np.sqrt
 
         out = self.gamma * xn + self.beta
         return out
@@ -188,24 +188,20 @@ class BatchNormalization:
 
     def __backward(self, dout):
         dbeta = dout.sum(axis=0)
-        dgamma = np.sum(self.xn * dout, axis=0)
+        dgamma = torch.sum(self.xn * dout, dim=0)     #np.sum(self.xn * dout, axis=0)
         dxn = self.gamma * dout
         dxc = dxn / self.std
-        dstd = -np.sum((dxn * self.xc) / (self.std * self.std), axis=0)
+        dstd = -torch.sum((dxn * self.xc) / (self.std * self.std), dim=0)  
+            #-np.sum((dxn * self.xc) / (self.std * self.std), axis=0)
         dvar = 0.5 * dstd / self.std
         dxc += (2.0 / self.batch_size) * self.xc * dvar
-        dmu = np.sum(dxc, axis=0)
+        dmu = torch.sum(dxc, dim=0)                     #np.sum(dxc, axis=0)
         dx = dxc - dmu / self.batch_size
 
         self.dgamma = dgamma
         self.dbeta = dbeta
 
         return dx
-
-#추가한 batchNorm
-class CustomBatchNorm:
-
-
 
 
 class Convolution:

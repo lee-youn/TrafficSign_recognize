@@ -26,6 +26,7 @@ if __name__ == "__main__":
     #number of nodes in the previous layer
     nodes_num = 3*48*48
     he = np.sqrt(2.0 / nodes_num)
+    
     print("he :", he)
     network = CNN(
         input_dim=(3, 48, 48),
