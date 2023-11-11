@@ -46,10 +46,10 @@ class Trainer:
         grads = self.network.gradient(x_batch, t_batch)
         self.optimizer.update(self.network.params, grads)
 
-        loss = self.network.loss(x_batch, t_batch)
+        loss = self.network.loss(x_batch, t_batch).numpy()
         self.train_loss_list.append(loss)
         if self.verbose:
-            print("train loss:" + str(loss))
+            print("train loss: " + str(np.round(loss, 4)))
 
         if self.current_iter % self.iter_per_epoch == 0:
             self.current_epoch += 1

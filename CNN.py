@@ -3,6 +3,9 @@ import sys
 import os
 import pickle
 from collections import OrderedDict
+
+import torch
+
 from common.gradient import numerical_gradient
 from common.layers import *
 import numpy as np
@@ -57,6 +60,10 @@ class CNN:
         self.params["W3"] = weight_init_std * rgen.logistic(size=(hidden_size, output_size))
         self.params["b3"] = np.zeros(output_size)
 
+        # 가중치를 tensor로 변경
+        for key, value in self.params.items():
+            self.params[key] = torch.from_numpy(value)
+
         # 계층 생성
         self.layers = OrderedDict()
         self.layers["Conv1"] = Convolution(
@@ -92,7 +99,7 @@ class CNN:
 
     def accuracy(self, x, t, batch_size=100):
         if t.ndim != 1:
-            t = np.argmax(t, axis=1)
+            t = torch.argmax(t, dim=1)
 
         acc = 0.0
 
@@ -100,8 +107,8 @@ class CNN:
             tx = x[i * batch_size: (i + 1) * batch_size]
             tt = t[i * batch_size: (i + 1) * batch_size]
             y = self.predict(tx)
-            y = np.argmax(y, axis=1)
-            acc += np.sum(y == tt)
+            y = torch.argmax(y, dim=1)
+            acc += np.sum(y.numpy() == tt)
 
         return acc / x.shape[0]
 

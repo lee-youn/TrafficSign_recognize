@@ -1,18 +1,19 @@
 import os
 
-import numpy as np
 import h5py
+import torch
+import numpy as np
 
 
-def load_data(n=None, printflag = True):
+def load_data(n=None):
     f = os.path.join(os.getcwd(), "data", "dataset_ts_light_version.hdf5")
 
     # Opening dataset from HDF5 binary file
     # Initiating File object
     # Opening file in reading mode by 'r'
     with h5py.File(
-        f,
-        "r",
+            f,
+            "r",
     ) as f:
         # Showing all keys in the HDF5 binary file
         # print(list(f.keys()))
@@ -53,14 +54,13 @@ def load_data(n=None, printflag = True):
 
     # Check point
     # Showing shapes of arrays after splitting
-    if printflag == True:
-        print("x_train.shape() :\t", x_train.shape)
-        print("y_train.shape() :\t", y_train.shape)
-        
-        print("x_validation.shape() :\t", x_validation.shape)
-        print("y_validation.shape() :\t", y_validation.shape)
-        
-        print("x_test.shape() :\t", x_test.shape)
-        print("y_test.shape() :\t", y_test.shape)
+    print(x_train.shape)
+    print(y_train.shape)
+
+    print(x_validation.shape)
+    print(y_validation.shape)
+
+    print(x_test.shape)
+    print(y_test.shape)
 
     return x_train, y_train, x_validation, y_validation, x_test, y_test

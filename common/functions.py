@@ -1,5 +1,5 @@
 # coding: utf-8
-import numpy as np
+import torch
 
 
 def identity_function(x):
@@ -23,7 +23,7 @@ def relu(x):
 
 
 def relu_grad(x):
-    grad = np.zeros(x)
+    grad = torch.zeros(x)
     grad[x >= 0] = 1
     return grad
 
@@ -31,12 +31,12 @@ def relu_grad(x):
 def softmax(x):
     if x.ndim == 2:
         x = x.T
-        x = x - np.max(x, axis=0)
-        y = np.exp(x) / np.sum(np.exp(x), axis=0)
+        x = x - torch.max(x, dim=0)[0]
+        y = torch.exp(x) / torch.sum(torch.exp(x), dim=0)
         return y.T
 
-    x = x - np.max(x)  # 오버플로 대책
-    return np.exp(x) / np.sum(np.exp(x))
+    x = x - torch.max(x)[0]  # 오버플로 대책
+    return torch.exp(x) / torch.sum(torch.exp(x))
 
 
 def mean_squared_error(y, t):
@@ -53,7 +53,7 @@ def cross_entropy_error(y, t):
         t = t.argmax(axis=1)
 
     batch_size = y.shape[0]
-    return -np.sum(np.log(y[np.arange(batch_size), t] + 1e-7)) / batch_size
+    return -torch.sum(torch.log(y[torch.arange(batch_size), t] + 1e-7)) / batch_size
 
 
 def softmax_loss(X, t):

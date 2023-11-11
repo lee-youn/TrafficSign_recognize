@@ -1,5 +1,7 @@
 # coding: utf-8
 import numpy as np
+import torch
+
 from common.functions import *
 from common.util import im2col, col2im
 
@@ -10,7 +12,7 @@ class Relu:
 
     def forward(self, x):
         self.mask = x <= 0
-        out = x.copy()
+        out = x.clone().detach()
         out[self.mask] = 0
 
         return out
@@ -52,16 +54,16 @@ class Affine:
         # 텐서 대응
         self.original_x_shape = x.shape
         x = x.reshape(x.shape[0], -1)
-        self.x = x
+        self.x = x.type("torch.DoubleTensor")
 
-        out = np.dot(self.x, self.W) + self.b
+        out = torch.matmul(self.x, self.W) + self.b
 
         return out
 
     def backward(self, dout):
-        dx = np.dot(dout, self.W.T)
-        self.dW = np.dot(self.x.T, dout)
-        self.db = np.sum(dout, axis=0)
+        dx = torch.matmul(dout, self.W.T)
+        self.dW = torch.matmul(self.x.T, dout)
+        self.db = torch.sum(dout, dim=0)
 
         dx = dx.reshape(*self.original_x_shape)  # 입력 데이터 모양 변경(텐서 대응)
         return dx
@@ -85,8 +87,8 @@ class SoftmaxWithLoss:
         if self.t.size == self.y.size:  # 정답 레이블이 원-핫 인코딩 형태일 때
             dx = (self.y - self.t) / batch_size
         else:
-            dx = self.y.copy()
-            dx[np.arange(batch_size), self.t] -= 1
+            dx = self.y.clone().detach()
+            dx[torch.arange(batch_size), self.t] -= 1
             dx = dx / batch_size
 
         return dx
@@ -224,10 +226,11 @@ class Convolution:
         out_w = 1 + int((W + 2 * self.pad - FW) / self.stride)
 
         col = im2col(x, FH, FW, self.stride, self.pad)
-        col_W = self.W.reshape(FN, -1).T
+        col_W = self.W.reshape(FN, -1).T.type('torch.FloatTensor')
 
-        out = np.dot(col, col_W) + self.b
-        out = out.reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2)
+        out = torch.matmul(col, col_W) + self.b
+        out = out.numpy().reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2)
+        out = torch.from_numpy(out)
 
         self.x = x
         self.col = col
@@ -237,13 +240,14 @@ class Convolution:
 
     def backward(self, dout):
         FN, C, FH, FW = self.W.shape
-        dout = dout.transpose(0, 2, 3, 1).reshape(-1, FN)
+        dout = dout.numpy().transpose(0, 2, 3, 1).reshape(-1, FN)
+        dout = torch.from_numpy(dout)
 
-        self.db = np.sum(dout, axis=0)
-        self.dW = np.dot(self.col.T, dout)
+        self.db = torch.sum(dout, dim=0)
+        self.dW = torch.matmul(self.col.T, dout)
         self.dW = self.dW.transpose(1, 0).reshape(FN, C, FH, FW)
 
-        dcol = np.dot(dout, self.col_W.T)
+        dcol = torch.matmul(dout, self.col_W.T)
         dx = col2im(dcol, self.x.shape, FH, FW, self.stride, self.pad)
 
         return dx
@@ -268,8 +272,9 @@ class Pooling:
         col = col.reshape(-1, self.pool_h * self.pool_w)
 
         arg_max = np.argmax(col, axis=1)
-        out = np.max(col, axis=1)
-        out = out.reshape(N, out_h, out_w, C).transpose(0, 3, 1, 2)
+        out = torch.max(col, dim=1)[0]
+        out = out.numpy().reshape(N, out_h, out_w, C).transpose(0, 3, 1, 2)
+        out = torch.from_numpy(out)
 
         self.x = x
         self.arg_max = arg_max
@@ -277,11 +282,12 @@ class Pooling:
         return out
 
     def backward(self, dout):
-        dout = dout.transpose(0, 2, 3, 1)
+        dout = dout.numpy().transpose(0, 2, 3, 1)
+        dout = torch.from_numpy(dout)
 
         pool_size = self.pool_h * self.pool_w
-        dmax = np.zeros((dout.size, pool_size))
-        dmax[np.arange(self.arg_max.size), self.arg_max.flatten()] = dout.flatten()
+        dmax = torch.zeros((dout.numpy().size, pool_size))
+        dmax[torch.arange(self.arg_max.numpy().size), self.arg_max.flatten()] = dout.flatten().float()
         dmax = dmax.reshape(dout.shape + (pool_size,))
 
         dcol = dmax.reshape(dmax.shape[0] * dmax.shape[1] * dmax.shape[2], -1)
