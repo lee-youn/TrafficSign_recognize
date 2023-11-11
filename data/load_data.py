@@ -4,7 +4,7 @@ import numpy as np
 import h5py
 
 
-def load_data(n=None):
+def load_data(n=None, printflag = True):
     f = os.path.join(os.getcwd(), "data", "dataset_ts_light_version.hdf5")
 
     # Opening dataset from HDF5 binary file
@@ -53,13 +53,14 @@ def load_data(n=None):
 
     # Check point
     # Showing shapes of arrays after splitting
-    # print(x_train.shape)
-    # print(y_train.shape)
-    #
-    # print(x_validation.shape)
-    # print(y_validation.shape)
-    #
-    # print(x_test.shape)
-    # print(y_test.shape)
+    if printflag == True:
+        print("x_train.shape() :\t", x_train.shape)
+        print("y_train.shape() :\t", y_train.shape)
+        
+        print("x_validation.shape() :\t", x_validation.shape)
+        print("y_validation.shape() :\t", y_validation.shape)
+        
+        print("x_test.shape() :\t", x_test.shape)
+        print("y_test.shape() :\t", y_test.shape)
 
     return x_train, y_train, x_validation, y_validation, x_test, y_test
