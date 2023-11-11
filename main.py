@@ -1,6 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 import torch
+import numpy as np
 
 from CNN import CNN
 from common.trainer import Trainer
@@ -22,12 +23,17 @@ if __name__ == "__main__":
         N, device=device
     )
 
+    #number of nodes in the previous layer
+    nodes_num = 3*48*48
+    he = np.sqrt(2.0 / nodes_num)
+    print("he :", he)
     network = CNN(
         input_dim=(3, 48, 48),
         conv_param={"filter_num": 100, "filter_size": 5, "pad": 0, "stride": 1},
         hidden_size=100,
         output_size=43,
-        weight_init_std=0.01,
+        weight_init_std= he,
+        # 0.01, He(1 / np.sqrt(2.0/node_num))
         device=device,
     )
 

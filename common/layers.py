@@ -202,6 +202,11 @@ class BatchNormalization:
 
         return dx
 
+#추가한 batchNorm
+class CustomBatchNorm:
+
+
+
 
 class Convolution:
     def __init__(self, W, b, stride=1, pad=0):
