@@ -112,10 +112,10 @@ class CNN:
 
         for i in range(int(x.shape[0] / batch_size)):
             tx = x[i * batch_size : (i + 1) * batch_size]
-            tt = t[i * batch_size : (i + 1) * batch_size]
-            y = self.predict(tx)
-            y = torch.argmax(y, dim=1)
-            acc += np.sum(y.cpu().numpy() == tt)
+            tt = t[i * batch_size : (i + 1) * batch_size].cpu().numpy()
+            y = self.predict(tx).cpu().numpy()
+            y = np.argmax(y, axis=1)
+            acc += np.sum(y == tt)
 
         return acc / x.shape[0]
 

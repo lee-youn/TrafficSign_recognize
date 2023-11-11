@@ -14,20 +14,20 @@ if __name__ == "__main__":
     print(torch.cuda.get_device_name(device))
 
     N = 6400
-    EPOCHS = 100
-    BATCH_SIZE = 1000
-    LR = 0.01
+    EPOCHS = 20
+    BATCH_SIZE = 100
+    LR = 0.001
 
     x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(
-        device=device
+        N, device=device
     )
 
     network = CNN(
         input_dim=(3, 48, 48),
-        conv_param={"filter_num": 30, "filter_size": 9, "pad": 0, "stride": 1},
+        conv_param={"filter_num": 100, "filter_size": 5, "pad": 0, "stride": 1},
         hidden_size=100,
         output_size=43,
-        weight_init_std=0.1,
+        weight_init_std=0.01,
         device=device,
     )
 
