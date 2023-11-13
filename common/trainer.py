@@ -32,6 +32,7 @@ class Trainer:
         self.epochs = epochs
         self.batch_size = mini_batch_size
         self.evaluate_sample_num_per_epoch = evaluate_sample_num_per_epoch
+        
 
         # optimzer
         optimizer_class_dict = {
@@ -50,6 +51,7 @@ class Trainer:
         self.current_iter = 0
         self.current_epoch = 0
 
+        self.confusionMatrix = None
         self.train_loss_list = []
         self.train_acc_list = []
         self.test_acc_list = []
@@ -106,16 +108,21 @@ class Trainer:
                     + ", test f1score:"
                     + str(np.round(test_f1, 5))
                     + " ==="
-
                 )
         self.current_iter += 1
 
     def train(self):
         for _ in range(self.max_iter):
             self.train_step()
-
-        test_acc = self.network.accuracy(self.x_test, self.t_test)
+        
+        #accuracy -> accuracy_f1score 변경에 따른 수정.
+        test_result = self.network.accuracy_f1score(self.x_test, self.t_test)
+        test_acc = test_result[0]
+        test_f1score = test_result[1]
+        self.confusionMatrix = test_result[2]
+        
 
         if self.verbose:
             print("=============== Final Test Accuracy ===============")
             print("test acc:" + str(test_acc))
+            

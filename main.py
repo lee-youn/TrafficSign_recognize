@@ -15,7 +15,7 @@ if __name__ == "__main__":
     print(torch.cuda.get_device_name(device))
 
     N = 6400
-    EPOCHS = 20
+    EPOCHS = 2
     BATCH_SIZE = 100
     LR = 0.001
 
@@ -65,6 +65,7 @@ if __name__ == "__main__":
     )
     trainer.train()
 
+    
     markers = {"train": "o", "test": "s"}
     x = torch.arange(EPOCHS)
     plt.plot(x, trainer.train_acc_list, marker="o", label="train", markevery=2)
@@ -73,4 +74,7 @@ if __name__ == "__main__":
     plt.ylabel("accuracy")
     plt.ylim(0, 1.0)
     plt.legend(loc="lower right")
+    plt.show()
+
+    plt.matshow(trainer.confusionMatrix)
     plt.show()

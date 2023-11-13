@@ -43,6 +43,7 @@ class CNN:
     ):
         #confusion matrix 연산을 위한 label 수 저장.
         self.output_size = output_size
+        self.confusion_matrix = None
 
         filter_num = conv_param["filter_num"]
         filter_size = conv_param["filter_size"]
@@ -110,6 +111,8 @@ class CNN:
         y = self.predict(x)
         return self.last_layer.forward(y, t)
 
+
+    # accuracy, f1score를 return 하는 함수.
     def accuracy_f1score(self, x, t, batch_size=100):
         # x == data
         # t == label
@@ -139,7 +142,7 @@ class CNN:
             #confusion matrix
             for i in range(len(y)):
                 confusion_matrix[tt[i]][y[i]] += 1
-        
+
         #accuracy(맞은 것 세기)
         accuracy = 0.0
         for i in range(0,labels):
@@ -174,7 +177,7 @@ class CNN:
         #f1 score
         f1score = 2 * precision_avg * recall_avg / (precision_avg + recall_avg)
         
-        return accuracy, f1score
+        return accuracy, f1score, confusion_matrix
         
         
 
