@@ -5,10 +5,12 @@ import pickle
 from collections import OrderedDict
 
 import torch
+import numpy as np
 
 from common.gradient import numerical_gradient
 from common.layers import *
-import numpy as np
+
+
 
 sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도록 설정
 
@@ -39,6 +41,9 @@ class CNN:
         weight_init_std=0.1,
         device="cpu",
     ):
+        #confusion matrix 연산을 위한 label 수 저장.
+        self.output_size = output_size
+
         filter_num = conv_param["filter_num"]
         filter_size = conv_param["filter_size"]
         filter_pad = conv_param["pad"]
@@ -66,6 +71,7 @@ class CNN:
             size=(hidden_size, output_size)
         )
         self.params["b3"] = np.zeros(output_size)
+
 
         # 가중치를 tensor로 변경
         for key, value in self.params.items():
@@ -104,20 +110,75 @@ class CNN:
         y = self.predict(x)
         return self.last_layer.forward(y, t)
 
-    def accuracy(self, x, t, batch_size=100):
+    def accuracy_f1score(self, x, t, batch_size=100):
+        # x == data
+        # t == label
+
         if t.ndim != 1:
             t = torch.argmax(t, dim=1)
+        #one hot label -> normal label
 
-        acc = 0.0
+        
+        labels = self.output_size
 
+        confusion_matrix = [[0 for col in range(labels)]for row in range(labels)]
+        #range(train data 개수 / batch_size)
         for i in range(int(x.shape[0] / batch_size)):
+
             tx = x[i * batch_size : (i + 1) * batch_size]
+            # i번째 batch의 data list
             tt = t[i * batch_size : (i + 1) * batch_size].cpu().numpy()
+            # i번째 batch의 label list
+
+            #매 batch당 classification
             y = self.predict(tx).cpu().numpy()
             y = np.argmax(y, axis=1)
-            acc += np.sum(y == tt)
 
-        return acc / x.shape[0]
+            # acc += np.sum(y == tt)    맞은 것 개수 세기
+
+            #confusion matrix
+            for i in range(len(y)):
+                confusion_matrix[tt[i]][y[i]] += 1
+        
+        #accuracy(맞은 것 세기)
+        accuracy = 0.0
+        for i in range(0,labels):
+            accuracy += confusion_matrix[i][i]
+        accuracy = accuracy / x.shape[0]
+
+        #precision
+        precision = [0]*labels
+        precision_devider = np.sum(confusion_matrix, axis = 0)
+            #TP + FP
+        for i in range(0,labels):
+            if precision_devider[i] != 0:
+                precision[i] = confusion_matrix[i][i] / precision_devider[i]
+            else:
+                #0으로 나누는 것 방지. 우선은 그냥 0으로 뒀음.
+                precision[i] = 0
+        precision_avg = np.mean(precision)
+
+        #recall
+        recall = [0]*labels
+        recall_devider = np.sum(confusion_matrix, axis = 1)
+            #TP + FN
+        for i in range(0,labels):
+            if recall_devider[i] != 0:
+                recall[i] = confusion_matrix[i][i] / recall_devider[i]
+            else:
+                #0으로 나누는 것 방지.
+                recall[i] = 0
+        recall_avg = np.mean(recall)
+
+        
+        #f1 score
+        f1score = 2 * precision_avg * recall_avg / (precision_avg + recall_avg)
+        
+        return accuracy, f1score
+        
+        
+
+
 
     # 시간 소모 너무 심함(생략)
     # def numerical_gradient(self, x, t):

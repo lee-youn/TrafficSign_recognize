@@ -53,6 +53,8 @@ class Trainer:
         self.train_loss_list = []
         self.train_acc_list = []
         self.test_acc_list = []
+        self.train_f1_list = []
+        self.test_f1_list = []
 
     def train_step(self):
         batch_mask = np.random.choice(self.train_size, self.batch_size)
@@ -77,10 +79,19 @@ class Trainer:
                 x_train_sample, t_train_sample = self.x_train[:t], self.t_train[:t]
                 x_test_sample, t_test_sample = self.x_test[:t], self.t_test[:t]
 
-            train_acc = self.network.accuracy(x_train_sample, t_train_sample)
-            test_acc = self.network.accuracy(x_test_sample, t_test_sample)
+            train_result = self.network.accuracy_f1score(x_train_sample, t_train_sample)
+            test_result = self.network.accuracy_f1score(x_test_sample, t_test_sample)
+            
+            train_acc = train_result[0]
+            test_acc = test_result[0]
+
+            train_f1 = train_result[1]
+            test_f1 = test_result[1]
+            
             self.train_acc_list.append(train_acc)
             self.test_acc_list.append(test_acc)
+            self.train_f1_list.append(train_f1)
+            self.test_f1_list.append(test_f1)
 
             if self.verbose:
                 print(
@@ -90,7 +101,12 @@ class Trainer:
                     + str(train_acc)
                     + ", test acc:"
                     + str(test_acc)
+                    + ", train f1score:"
+                    + str(np.round(train_f1, 5))
+                    + ", test f1score:"
+                    + str(np.round(test_f1, 5))
                     + " ==="
+
                 )
         self.current_iter += 1
 
