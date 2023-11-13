@@ -19,12 +19,18 @@ if __name__ == "__main__":
     BATCH_SIZE = 100
     LR = 0.001
 
+    # <data shape>
+    # train     (N,     3,48,48)
+    # validation(N,     3,48,48)
+    # test      (7766,  3,48,48)
+    # N=none 일 경우 각 90601, 31063, 7766개
+
     x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(
-        N, device=device
+        N, _print=True, device=device
     )
 
     #number of nodes in the previous layer
-    nodes_num = 3*48*48
+    nodes_num = BATCH_SIZE*3*48*48
     he = np.sqrt(2.0 / nodes_num)
     
     print("he :", he)
@@ -33,17 +39,22 @@ if __name__ == "__main__":
         conv_param={"filter_num": 100, "filter_size": 5, "pad": 0, "stride": 1},
         hidden_size=100,
         output_size=43,
-        weight_init_std= he,
+        weight_init_std=he,
         # 0.01, He(1 / np.sqrt(2.0/node_num))
         device=device,
     )
 
     trainer = Trainer(
+        #CNN
         network,
+
+        #dataset
         x_train,
         y_train,
         x_test,
         y_test,
+
+        #HyperParameters
         epochs=EPOCHS,
         mini_batch_size=BATCH_SIZE,
         optimizer="Adam",
