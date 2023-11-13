@@ -56,6 +56,6 @@ def cross_entropy_error(y, t):
     return -torch.sum(torch.log(y[torch.arange(batch_size), t] + 1e-7)) / batch_size
 
 
-def softmax_loss(X, t):
-    y = softmax(X)
+def softmax_loss(x, t):
+    y = softmax(x)
     return cross_entropy_error(y, t)

@@ -29,9 +29,9 @@ if __name__ == "__main__":
         N, _print=True, device=device
     )
 
-    #number of nodes in the previous layer
-    #nodes_num = BATCH_SIZE*3*48*48
-    #he = np.sqrt(2.0 / nodes_num)
+    # number of nodes in the previous layer
+    # nodes_num = BATCH_SIZE*3*48*48
+    # he = np.sqrt(2.0 / nodes_num)
 
     network = CNN(
         input_dim=(3, 48, 48),
@@ -44,16 +44,16 @@ if __name__ == "__main__":
     )
 
     trainer = Trainer(
-        #CNN
+        # CNN
         network,
 
-        #dataset
+        # dataset
         x_train,
         y_train,
         x_test,
         y_test,
 
-        #HyperParameters
+        # HyperParameters
         epochs=EPOCHS,
         mini_batch_size=BATCH_SIZE,
         optimizer="Adam",
@@ -65,7 +65,6 @@ if __name__ == "__main__":
     )
     trainer.train()
 
-    
     markers = {"train": "o", "test": "s"}
     x = torch.arange(EPOCHS)
     plt.plot(x, trainer.train_acc_list, marker="o", label="train", markevery=2)
@@ -77,6 +76,6 @@ if __name__ == "__main__":
     plt.show()
 
     plt.matshow(trainer.confusionMatrix)
-    for (x,y), value in np.ndenumerate(trainer.confusionMatrix):
+    for (x, y), value in np.ndenumerate(trainer.confusionMatrix):
         plt.text(x, y, f"{value}", va="center", ha="center")
     plt.show()

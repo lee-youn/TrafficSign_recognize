@@ -33,13 +33,13 @@ class CNN:
     """
 
     def __init__(
-        self,
-        input_dim=(3, 48, 48),
-        conv_param={"filter_num": 30, "filter_size": 5, "pad": 0, "stride": 1},
-        hidden_size=10000,
-        output_size=43,
-        weight_init_std=0.1,
-        device="cpu",
+            self,
+            input_dim=(3, 48, 48),
+            conv_param={"filter_num": 30, "filter_size": 5, "pad": 0, "stride": 1},
+            hidden_size=100,
+            output_size=43,
+            weight_init_std=0.1,
+            device="cpu",
     ):
         #confusion matrix 연산을 위한 label 수 저장.
         self.output_size = output_size
@@ -51,11 +51,16 @@ class CNN:
         filter_stride = conv_param["stride"]
         input_size = input_dim[1]
         conv_output_size = (
-            input_size - filter_size + 2 * filter_pad
-        ) / filter_stride + 1
+                                   input_size - filter_size + 2 * filter_pad
+                           ) / filter_stride + 1
         pool_output_size = int(
             filter_num * (conv_output_size / 2) * (conv_output_size / 2)
         )
+        if type(weight_init_std) is not float:
+            if weight_init_std.lower() == 'relu' or weight_init_std.lower() == 'he':
+                weight_init_std = (2 / hidden_size) ** 0.5
+            elif weight_init_std.lower() == 'sigmoid' or weight_init_std.lower() == 'xavier':
+                weight_init_std = 1 / (hidden_size ** 0.5)
 
         # 가중치 초기화
         self.params = {}
