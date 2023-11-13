@@ -68,7 +68,7 @@ class Trainer:
         loss = self.network.loss(x_batch, t_batch).cpu().numpy()
         self.train_loss_list.append(loss)
         if self.verbose:
-            print("train loss: " + str(np.round(loss, 4)))
+            print(f"train loss: {loss:0.5f}")
 
         if self.current_iter % self.iter_per_epoch == 0:
             self.current_epoch += 1
@@ -81,9 +81,9 @@ class Trainer:
                 x_test_sample, t_test_sample = self.x_test[:t], self.t_test[:t]
 
             train_result = self.network.accuracy_f1score(x_train_sample, t_train_sample)
-            train_acc, train_f1 = train_result
+            train_acc, train_f1, *_ = train_result
             test_result = self.network.accuracy_f1score(x_test_sample, t_test_sample)
-            test_acc, test_f1 = test_result
+            test_acc, test_f1, *_ = test_result
 
             self.train_acc_list.append(train_acc)
             self.test_acc_list.append(test_acc)

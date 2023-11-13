@@ -1,19 +1,20 @@
 import os
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import torch
 import numpy as np
-
-from CNN import CNN
 
 from common.etc import print_gpu_info
 from common.trainer import Trainer
 
 from data.load_data import load_data
+from models.CNN import CNN
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print_gpu_info(device)
 
+    # Hyper Parameters
     N = 6400
     EPOCHS = 2
     BATCH_SIZE = 100
@@ -25,11 +26,10 @@ if __name__ == "__main__":
     # test      (7766,  3,48,48)
     # N=none 일 경우 각 90601, 31063, 7766개
 
-    x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(
-        N, _print=True, device=device
-    )
+    x_train, y_train, x_validation, y_validation, x_test, y_test = \
+        load_data(N, _print=True, device=device)
 
-    # number of nodes in the previous layer
+    # Number of nodes in the previous layer
     # nodes_num = BATCH_SIZE*3*48*48
     # he = np.sqrt(2.0 / nodes_num)
 
@@ -68,10 +68,12 @@ if __name__ == "__main__":
     plt.ylabel("accuracy")
     plt.ylim(0, 1.0)
     plt.legend(loc="lower right")
+
     plt.show()
 
     # Confusion Matrix
-    plt.matshow(trainer.confusion_matrix)
+    plt.figure(figsize=(20, 20))
+    plt.matshow(trainer.confusion_matrix, fignum=1, cmap=plt.colormaps["Blues"])
     for (x, y), value in np.ndenumerate(trainer.confusion_matrix):
-        plt.text(x, y, f"{value}", va="center", ha="center")
+        plt.text(x, y, f"{int(value) if value != 0 else ' '}", va="center", ha="center")
     plt.show()
