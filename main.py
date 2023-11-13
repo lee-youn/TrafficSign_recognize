@@ -77,4 +77,6 @@ if __name__ == "__main__":
     plt.show()
 
     plt.matshow(trainer.confusionMatrix)
+    for (x,y), value in np.ndenumerate(trainer.confusionMatrix):
+        plt.text(x, y, f"{value}", va="center", ha="center")
     plt.show()
