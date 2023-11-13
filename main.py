@@ -4,15 +4,15 @@ import torch
 import numpy as np
 
 from CNN import CNN
+
+from common.etc import print_gpu_info
 from common.trainer import Trainer
 
 from data.load_data import load_data
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("Available devices ", torch.cuda.device_count())
-    print("Current cuda device ", torch.cuda.current_device())
-    print(torch.cuda.get_device_name(device))
+    print_gpu_info(device)
 
     N = 6400
     EPOCHS = 2
@@ -44,27 +44,22 @@ if __name__ == "__main__":
     )
 
     trainer = Trainer(
-        # CNN
-        network,
+        network=network,
+        x_train=x_train,
+        y_train=y_train,
+        x_test=x_test,
+        y_test=y_test,
 
-        # dataset
-        x_train,
-        y_train,
-        x_test,
-        y_test,
-
-        # HyperParameters
         epochs=EPOCHS,
         mini_batch_size=BATCH_SIZE,
         optimizer="Adam",
         optimizer_param={"lr": LR},
         evaluate_sample_num_per_epoch=1000,
-        # number of samples used in evaluating accuracy on every epoch.
         device=device,
-        # CUDA device (GPU)
     )
     trainer.train()
 
+    # Accuracy Graph
     markers = {"train": "o", "test": "s"}
     x = torch.arange(EPOCHS)
     plt.plot(x, trainer.train_acc_list, marker="o", label="train", markevery=2)
@@ -75,7 +70,8 @@ if __name__ == "__main__":
     plt.legend(loc="lower right")
     plt.show()
 
-    plt.matshow(trainer.confusionMatrix)
-    for (x, y), value in np.ndenumerate(trainer.confusionMatrix):
+    # Confusion Matrix
+    plt.matshow(trainer.confusion_matrix)
+    for (x, y), value in np.ndenumerate(trainer.confusion_matrix):
         plt.text(x, y, f"{value}", va="center", ha="center")
     plt.show()

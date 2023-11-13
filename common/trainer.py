@@ -9,32 +9,31 @@ class Trainer:
     """신경망 훈련을 대신 해주는 클래스"""
 
     def __init__(
-        self,
-        network,
-        x_train,
-        t_train,
-        x_test,
-        t_test,
-        epochs=20,
-        mini_batch_size=100,
-        optimizer="SGD",
-        optimizer_param={"lr": 0.01},
-        evaluate_sample_num_per_epoch=None,
-        verbose=True,
-        device="cpu",
+            self,
+            network,
+            x_train,
+            y_train,
+            x_test,
+            y_test,
+            epochs=20,
+            mini_batch_size=100,
+            optimizer="SGD",
+            optimizer_param={"lr": 0.01},
+            evaluate_sample_num_per_epoch=None,
+            verbose=True,
+            device="cpu",
     ):
         self.network = network
-        self.verbose = verbose
         self.x_train = x_train
-        self.t_train = t_train
+        self.t_train = y_train
         self.x_test = x_test
-        self.t_test = t_test
+        self.t_test = y_test
         self.epochs = epochs
         self.batch_size = mini_batch_size
         self.evaluate_sample_num_per_epoch = evaluate_sample_num_per_epoch
-        
+        self.verbose = verbose
 
-        # optimzer
+        # optimizer
         optimizer_class_dict = {
             "sgd": SGD,
             "momentum": Momentum,
@@ -51,7 +50,7 @@ class Trainer:
         self.current_iter = 0
         self.current_epoch = 0
 
-        self.confusionMatrix = None
+        self.confusion_matrix = None
         self.train_loss_list = []
         self.train_acc_list = []
         self.test_acc_list = []
@@ -82,14 +81,10 @@ class Trainer:
                 x_test_sample, t_test_sample = self.x_test[:t], self.t_test[:t]
 
             train_result = self.network.accuracy_f1score(x_train_sample, t_train_sample)
+            train_acc, train_f1 = train_result
             test_result = self.network.accuracy_f1score(x_test_sample, t_test_sample)
-            
-            train_acc = train_result[0]
-            test_acc = test_result[0]
+            test_acc, test_f1 = test_result
 
-            train_f1 = train_result[1]
-            test_f1 = test_result[1]
-            
             self.train_acc_list.append(train_acc)
             self.test_acc_list.append(test_acc)
             self.train_f1_list.append(train_f1)
@@ -97,32 +92,17 @@ class Trainer:
 
             if self.verbose:
                 print(
-                    "=== epoch:"
-                    + str(self.current_epoch)
-                    + ", train acc:"
-                    + str(train_acc)
-                    + ", test acc:"
-                    + str(test_acc)
-                    + ", train f1score:"
-                    + str(np.round(train_f1, 5))
-                    + ", test f1score:"
-                    + str(np.round(test_f1, 5))
-                    + " ==="
+                    f"=== epoch:{self.current_epoch}, train acc:{train_acc}, test acc:{test_acc}, " +
+                    f"train f1score:{train_f1:0.5f}, test f1score:{test_f1:0.5f} ==="
                 )
         self.current_iter += 1
 
     def train(self):
         for _ in range(self.max_iter):
             self.train_step()
-        
-        #accuracy -> accuracy_f1score 변경에 따른 수정.
-        test_result = self.network.accuracy_f1score(self.x_test, self.t_test)
-        test_acc = test_result[0]
-        test_f1score = test_result[1]
-        self.confusionMatrix = test_result[2]
-        
 
+        # accuracy -> accuracy_f1score 변경에 따른 수정.
+        test_acc, test_f1score, self.confusion_matrix = self.network.accuracy_f1score(self.x_test, self.t_test)
         if self.verbose:
             print("=============== Final Test Accuracy ===============")
-            print("test acc:" + str(test_acc))
-            
+            print(f"acc:{test_acc:0.5f}, f1score:{test_f1score:0.5f}")
