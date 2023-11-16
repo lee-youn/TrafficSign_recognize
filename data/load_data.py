@@ -6,14 +6,17 @@ import numpy as np
 
 
 def load_data(n=None, _print=False, device="cpu"):
+    # Data shape
+    # train      (N,     3,48,48)
+    # validation (N,     3,48,48)
+    # test       (7766,  3,48,48)
+    # N=none 일 경우 각 90601, 31063, 7766개
+
     f = os.path.join(os.getcwd(), "data", "dataset_ts_light_version.hdf5")
 
-    # Opening dataset from HDF5 binary file
-    # Initiating File object
-    # Opening file in reading mode by 'r'
     with h5py.File(
-        f,
-        "r",
+            f,
+            "r",
     ) as f:
         # Showing all keys in the HDF5 binary file
         # print(list(f.keys()))

@@ -21,13 +21,12 @@ class Trainer:
             optimizer_param={"lr": 0.01},
             evaluate_sample_num_per_epoch=None,
             verbose=True,
-            device="cpu",
     ):
         self.network = network
         self.x_train = x_train
-        self.t_train = y_train
+        self.y_train = y_train
         self.x_test = x_test
-        self.t_test = y_test
+        self.y_test = y_test
         self.epochs = epochs
         self.batch_size = mini_batch_size
         self.evaluate_sample_num_per_epoch = evaluate_sample_num_per_epoch
@@ -60,7 +59,7 @@ class Trainer:
     def train_step(self):
         batch_mask = np.random.choice(self.train_size, self.batch_size)
         x_batch = self.x_train[batch_mask]
-        t_batch = self.t_train[batch_mask]
+        t_batch = self.y_train[batch_mask]
 
         grads = self.network.gradient(x_batch, t_batch)
         self.optimizer.update(self.network.params, grads)
@@ -73,12 +72,12 @@ class Trainer:
         if self.current_iter % self.iter_per_epoch == 0:
             self.current_epoch += 1
 
-            x_train_sample, t_train_sample = self.x_train, self.t_train
-            x_test_sample, t_test_sample = self.x_test, self.t_test
+            x_train_sample, t_train_sample = self.x_train, self.y_train
+            x_test_sample, t_test_sample = self.x_test, self.y_test
             if self.evaluate_sample_num_per_epoch is not None:
                 t = self.evaluate_sample_num_per_epoch
-                x_train_sample, t_train_sample = self.x_train[:t], self.t_train[:t]
-                x_test_sample, t_test_sample = self.x_test[:t], self.t_test[:t]
+                x_train_sample, t_train_sample = self.x_train[:t], self.y_train[:t]
+                x_test_sample, t_test_sample = self.x_test[:t], self.y_test[:t]
 
             train_result = self.network.accuracy_f1score(x_train_sample, t_train_sample)
             train_acc, train_f1, *_ = train_result
@@ -102,7 +101,7 @@ class Trainer:
             self.train_step()
 
         # accuracy -> accuracy_f1score 변경에 따른 수정.
-        test_acc, test_f1score, self.confusion_matrix = self.network.accuracy_f1score(self.x_test, self.t_test)
+        test_acc, test_f1score, self.confusion_matrix = self.network.accuracy_f1score(self.x_test, self.y_test)
         if self.verbose:
             print("=============== Final Test Accuracy ===============")
             print(f"acc:{test_acc:0.5f}, f1score:{test_f1score:0.5f}")

@@ -1,17 +1,20 @@
 # coding: utf-8
 import sys
 import os
+
+import numpy as np
+import torch
+
+from common.layers import Convolution, Relu, Pooling, Affine, SoftmaxWithLoss
 import pickle
 from collections import OrderedDict
 
-from common.gradient import numerical_gradient
-from common.layers import *
+from models.CNN import CNN
 
 sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도록 설정
 
 
-# noinspection SpellCheckingInspection,PyUnresolvedReferences,PyDefaultArgument
-class CNN:
+class SimpleConvNet(CNN):
     """단순한 합성곱 신경망
 
     conv - relu - pool - affine - relu - affine - softmax
@@ -34,46 +37,25 @@ class CNN:
             hidden_size=100,
             output_size=43,
             weight_init_std=0.1,
-            device="cpu",
+            device="cpu"
     ):
-        # Confusion Matrix 연산을 위한 label 수 저장.
-        self.output_size = output_size
-        self.confusion_matrix = None
+        super().__init__(input_dim, conv_param, hidden_size, output_size, weight_init_std, device)
 
-        filter_num = conv_param["filter_num"]
-        filter_size = conv_param["filter_size"]
-        filter_pad = conv_param["pad"]
-        filter_stride = conv_param["stride"]
-        input_size = input_dim[1]
-        conv_output_size = (input_size - filter_size + 2 * filter_pad) / filter_stride + 1
-        pool_output_size = int(filter_num * (conv_output_size / 2) * (conv_output_size / 2))
-
-        # weight_init_std
-        if type(weight_init_std) is not float:
-            if weight_init_std.lower() == 'relu' or weight_init_std.lower() == 'he':
-                weight_init_std = (2 / hidden_size) ** 0.5
-            elif weight_init_std.lower() == 'sigmoid' or weight_init_std.lower() == 'xavier':
-                weight_init_std = 1 / (hidden_size ** 0.5)
-
-        # 가중치 초기화
-        self.params = {}
-        rgen = np.random.default_rng(43)
-        self.params["W1"] = weight_init_std * rgen.logistic(
-            size=(filter_num, input_dim[0], filter_size, filter_size)
+        # 계층 생성
+        self.layers = OrderedDict()
+        self.layers["Conv1"] = Convolution(
+            self.params["W1"],
+            self.params["b1"],
+            conv_param["stride"],
+            conv_param["pad"],
         )
-        self.params["b1"] = np.zeros(filter_num)
-        self.params["W2"] = weight_init_std * rgen.logistic(
-            size=(pool_output_size, hidden_size)
-        )
-        self.params["b2"] = np.zeros(hidden_size)
-        self.params["W3"] = weight_init_std * rgen.logistic(
-            size=(hidden_size, output_size)
-        )
-        self.params["b3"] = np.zeros(output_size)
+        self.layers["Relu1"] = Relu()
+        self.layers["Pool1"] = Pooling(pool_h=2, pool_w=2, stride=2)
+        self.layers["Affine1"] = Affine(self.params["W2"], self.params["b2"])
+        self.layers["Relu2"] = Relu()
+        self.layers["Affine2"] = Affine(self.params["W3"], self.params["b3"])
 
-        # 가중치를 tensor로 변경
-        for key, value in self.params.items():
-            self.params[key] = torch.from_numpy(value).to(device)
+        self.last_layer = SoftmaxWithLoss()
 
     def predict(self, x):
         for layer in self.layers.values():
@@ -82,7 +64,8 @@ class CNN:
         return x
 
     def loss(self, x, t):
-        """손실 함수를 구한다.
+        """
+        손실 함수를 구한다.
 
         Parameters
         ----------
