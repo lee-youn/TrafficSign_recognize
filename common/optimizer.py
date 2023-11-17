@@ -109,8 +109,12 @@ class Adam:
         if self.m is None:
             self.m, self.v = {}, {}
             for key, val in params.items():
-                self.m[key] = torch.zeros_like(val)
-                self.v[key] = torch.zeros_like(val)
+                if "bG" in key or "bB" in key:    #batchNorm 인 경우.
+                    self.m[key] = val
+                    self.v[key] = val
+                else:
+                    self.m[key] = torch.zeros_like(val)
+                    self.v[key] = torch.zeros_like(val)
 
         self.iter += 1
         lr_t = (
