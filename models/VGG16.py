@@ -1,17 +1,20 @@
 # coding: utf-8
 import sys
 import os
+
+import numpy as np
+import torch
+
+from common.layers import Convolution, Relu, Pooling, Affine, SoftmaxWithLoss
 import pickle
 from collections import OrderedDict
 
-from common.gradient import numerical_gradient
-from common.layers import *
+from models.CNN import CNN
 
 sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도록 설정
 
 
-# noinspection SpellCheckingInspection,PyUnresolvedReferences,PyDefaultArgument
-class CNN:
+class VGG16(CNN):
     """단순한 합성곱 신경망
 
     conv - relu - pool - affine - relu - affine - softmax
@@ -30,15 +33,98 @@ class CNN:
     def __init__(
         self,
         input_dim=(3, 48, 48),
-        conv_param={"filter_num": 30, "filter_size": 5, "pad": 0, "stride": 1},
+        conv_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
         hidden_size=100,
         output_size=43,
         weight_init_std=0.1,
         device="cpu",
     ):
-        # Confusion Matrix 연산을 위한 label 수 저장.
-        self.output_size = output_size
-        self.confusion_matrix = None
+        super().__init__(
+            input_dim, conv_param, hidden_size, output_size, weight_init_std, device
+        )
+
+        # filter_num = conv_param["filter_num"]
+        # filter_size = conv_param["filter_size"]
+        # filter_pad = conv_param["pad"]
+        # filter_stride = conv_param["stride"]
+        # input_size = input_dim[1]
+        # conv_output_size = (
+        #     input_size - filter_size + 2 * filter_pad
+        # ) / filter_stride + 1
+        # pool_output_size = int(
+        #     filter_num * (conv_output_size / 2) * (conv_output_size / 2)
+        # )
+        filter_size = conv_param["filter_size"]
+        filter_nums = [3]
+        for i in range(1, 5):
+            for _ in range(2 if i not in range(3, 6) else 3):
+                filter_nums.append(2 ** (i + 5))
+        filter_nums.extend([2**9] * 3)
+
+        fc_hidden_size = [512, 4096, 4096]
+        fc_output_size = [4096, 4096, 4096]
+
+        # 가중치 초기화
+        # self.params = {}
+        # rgen = np.random.default_rng(43)
+        # self.params["W1"] = weight_init_std * rgen.logistic(
+        #     size=(filter_num, input_dim[0], filter_size, filter_size)
+        # )
+        # self.params["b1"] = np.zeros(filter_num)
+        #
+        # self.params["W2"] = weight_init_std * rgen.logistic(
+        #     size=(pool_output_size, hidden_size)
+        # )
+        # self.params["b2"] = np.zeros(hidden_size)
+        #
+        # self.params["W3"] = weight_init_std * rgen.logistic(
+        #     size=(hidden_size, output_size)
+        # )
+        # self.params["b3"] = np.zeros(output_size)
+
+        # 가중치 초기화
+        self.params = {}
+        rgen = np.random.default_rng(43)
+        for i in range(1, 14):
+            self.params[f"W{i}"] = weight_init_std * rgen.logistic(
+                size=(filter_nums[i], filter_nums[i - 1], filter_size, filter_size)
+            )
+            self.params[f"b{i}"] = np.zeros(filter_nums[i])
+
+        i = 13
+        for fhs, fos in zip(fc_hidden_size, fc_output_size):
+            print(fhs, fos)
+            i += 1
+            self.params[f"W{i}"] = weight_init_std * rgen.logistic(size=(fhs, fos))
+            self.params[f"b{i}"] = np.zeros(fos)
+
+        # 가중치를 tensor로 변경
+        for key, value in self.params.items():
+            self.params[key] = torch.from_numpy(value).to(device)
+
+        # 계층 생성
+        self.layers = OrderedDict()
+
+        idx_c = idx_p = 0
+        for i in range(1, 6):
+            for _ in range(2 if i not in range(3, 6) else 3):
+                idx_c += 1
+                self.layers[f"Conv{idx_c}"] = Convolution(
+                    self.params[f"W{idx_c}"], self.params[f"b{idx_c}"], stride=1, pad=1
+                )
+                self.layers[f"Relu{idx_c}"] = Relu()
+
+            idx_p += 1
+            self.layers[f"Pool{idx_p}"] = Pooling(pool_h=2, pool_w=2, stride=2)
+
+        # idx_c: 13
+        for i in range(1, 4):
+            self.layers[f"Affine{i}"] = Affine(
+                self.params[f"W{idx_c+i}"], self.params[f"b{idx_c+i}"]
+            )
+            if i != 3:
+                self.layers[f"Relu{idx_c+i}"] = Relu()
+        self.last_layer = SoftmaxWithLoss()
 
     def predict(self, x):
         for layer in self.layers.values():
@@ -47,7 +133,8 @@ class CNN:
         return x
 
     def loss(self, x, t):
-        """손실 함수를 구한다.
+        """
+        손실 함수를 구한다.
 
         Parameters
         ----------

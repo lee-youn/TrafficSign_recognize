@@ -19,6 +19,6 @@ def accuracy_graph(trainer_, epoch_):
 def confusion_matrix(trainer_):
     plt.figure(figsize=(20, 20))
     plt.matshow(trainer_.confusion_matrix, fignum=1, cmap=plt.colormaps["Blues"])
-    for (x, y), value in torch.ndenumerate(trainer_.confusion_matrix):
+    for (x, y), value in np.ndenumerate(trainer_.confusion_matrix):
         plt.text(x, y, f"{int(value) if value != 0 else ' '}", va="center", ha="center")
     plt.show()
