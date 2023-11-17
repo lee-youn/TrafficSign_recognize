@@ -28,13 +28,13 @@ class CNN:
     """
 
     def __init__(
-            self,
-            input_dim=(3, 48, 48),
-            conv_param={"filter_num": 30, "filter_size": 5, "pad": 0, "stride": 1},
-            hidden_size=100,
-            output_size=43,
-            weight_init_std=0.1,
-            device="cpu",
+        self,
+        input_dim=(3, 48, 48),
+        conv_param={"filter_num": 30, "filter_size": 5, "pad": 0, "stride": 1},
+        hidden_size=100,
+        output_size=43,
+        weight_init_std=0.1,
+        device="cpu",
     ):
         # Confusion Matrix 연산을 위한 label 수 저장.
         self.output_size = output_size
@@ -45,35 +45,12 @@ class CNN:
         filter_pad = conv_param["pad"]
         filter_stride = conv_param["stride"]
         input_size = input_dim[1]
-        conv_output_size = (input_size - filter_size + 2 * filter_pad) / filter_stride + 1
-        pool_output_size = int(filter_num * (conv_output_size / 2) * (conv_output_size / 2))
-
-        # weight_init_std
-        if type(weight_init_std) is not float:
-            if weight_init_std.lower() == 'relu' or weight_init_std.lower() == 'he':
-                weight_init_std = (2 / hidden_size) ** 0.5
-            elif weight_init_std.lower() == 'sigmoid' or weight_init_std.lower() == 'xavier':
-                weight_init_std = 1 / (hidden_size ** 0.5)
-
-        # 가중치 초기화
-        self.params = {}
-        rgen = np.random.default_rng(43)
-        self.params["W1"] = weight_init_std * rgen.logistic(
-            size=(filter_num, input_dim[0], filter_size, filter_size)
+        conv_output_size = (
+            input_size - filter_size + 2 * filter_pad
+        ) / filter_stride + 1
+        pool_output_size = int(
+            filter_num * (conv_output_size / 2) * (conv_output_size / 2)
         )
-        self.params["b1"] = np.zeros(filter_num)
-        self.params["W2"] = weight_init_std * rgen.logistic(
-            size=(pool_output_size, hidden_size)
-        )
-        self.params["b2"] = np.zeros(hidden_size)
-        self.params["W3"] = weight_init_std * rgen.logistic(
-            size=(hidden_size, output_size)
-        )
-        self.params["b3"] = np.zeros(output_size)
-
-        # 가중치를 tensor로 변경
-        for key, value in self.params.items():
-            self.params[key] = torch.from_numpy(value).to(device)
 
     def predict(self, x):
         for layer in self.layers.values():
@@ -108,9 +85,9 @@ class CNN:
         # range(train data 개수 / batch_size)
         for i in range(int(x.shape[0] / batch_size)):
             # i번째 batch의 data list
-            tx = x[i * batch_size: (i + 1) * batch_size]
+            tx = x[i * batch_size : (i + 1) * batch_size]
             # i번째 batch의 label list
-            tt = t[i * batch_size: (i + 1) * batch_size].cpu().numpy()
+            tt = t[i * batch_size : (i + 1) * batch_size].cpu().numpy()
 
             # 매 batch당 classification
             y = self.predict(tx).cpu().numpy()

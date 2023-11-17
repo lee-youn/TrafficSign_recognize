@@ -5,7 +5,7 @@ import torch
 import numpy as np
 
 
-def load_data(n=None, _print=False, device="cpu"):
+def load_data(N_=None, print_=False, device_="cpu"):
     # Data shape
     # train      (N,     3,48,48)
     # validation (N,     3,48,48)
@@ -15,8 +15,8 @@ def load_data(n=None, _print=False, device="cpu"):
     f = os.path.join(os.getcwd(), "data", "dataset_ts_light_version.hdf5")
 
     with h5py.File(
-            f,
-            "r",
+        f,
+        "r",
     ) as f:
         # Showing all keys in the HDF5 binary file
         # print(list(f.keys()))
@@ -46,26 +46,26 @@ def load_data(n=None, _print=False, device="cpu"):
         y_test = np.array(y_test)  # Numpy arrays
 
         # Cutting
-        x_train = x_train[:n]
-        y_train = y_train[:n]
-        x_validation = x_validation[:n]
-        y_validation = y_validation[:n]
+        x_train = x_train[:N_]
+        y_train = y_train[:N_]
+        x_validation = x_validation[:N_]
+        y_validation = y_validation[:N_]
 
         x_train = np.transpose(x_train, (0, 3, 1, 2))
         x_validation = np.transpose(x_validation, (0, 3, 1, 2))
         x_test = np.transpose(x_test, (0, 3, 1, 2))
 
         # Convert to tensor
-        x_train = torch.from_numpy(x_train).to(device)
-        y_train = torch.from_numpy(y_train).to(device)
-        x_validation = torch.from_numpy(x_validation).to(device)
-        y_validation = torch.from_numpy(y_validation).to(device)
-        x_test = torch.from_numpy(x_test).to(device)
-        y_test = torch.from_numpy(y_test).to(device)
+        x_train = torch.from_numpy(x_train).to(device_)
+        y_train = torch.from_numpy(y_train).to(device_)
+        x_validation = torch.from_numpy(x_validation).to(device_)
+        y_validation = torch.from_numpy(y_validation).to(device_)
+        x_test = torch.from_numpy(x_test).to(device_)
+        y_test = torch.from_numpy(y_test).to(device_)
 
     # Check point
     # Showing shapes of arrays after splitting
-    if _print:
+    if print_:
         print(x_train.shape)
         print(y_train.shape)
 

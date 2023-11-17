@@ -3,7 +3,7 @@ import torch
 from matplotlib import pyplot as plt
 
 
-def Accuracy_graph(trainer_, epoch_):
+def accuracy_graph(trainer_, epoch_):
     markers = {"train": "o", "test": "s"}
     x = torch.arange(epoch_)
     plt.plot(x, trainer_.train_acc_list, marker="o", label="train", markevery=2)

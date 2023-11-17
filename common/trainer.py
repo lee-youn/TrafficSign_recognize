@@ -9,18 +9,18 @@ class Trainer:
     """신경망 훈련을 대신 해주는 클래스"""
 
     def __init__(
-            self,
-            network,
-            x_train,
-            y_train,
-            x_test,
-            y_test,
-            epochs=20,
-            mini_batch_size=100,
-            optimizer="SGD",
-            optimizer_param={"lr": 0.01},
-            evaluate_sample_num_per_epoch=None,
-            verbose=True,
+        self,
+        network,
+        x_train,
+        y_train,
+        x_test,
+        y_test,
+        epochs=20,
+        mini_batch_size=100,
+        optimizer="SGD",
+        optimizer_param={"lr": 0.01},
+        evaluate_sample_num_per_epoch=None,
+        verbose=True,
     ):
         self.network = network
         self.x_train = x_train
@@ -91,8 +91,8 @@ class Trainer:
 
             if self.verbose:
                 print(
-                    f"=== epoch:{self.current_epoch}, train acc:{train_acc}, test acc:{test_acc}, " +
-                    f"train f1score:{train_f1:0.5f}, test f1score:{test_f1:0.5f} ==="
+                    f"=== epoch:{self.current_epoch}, train acc:{train_acc}, test acc:{test_acc}, "
+                    + f"train f1score:{train_f1:0.5f}, test f1score:{test_f1:0.5f} ==="
                 )
         self.current_iter += 1
 
@@ -101,7 +101,9 @@ class Trainer:
             self.train_step()
 
         # accuracy -> accuracy_f1score 변경에 따른 수정.
-        test_acc, test_f1score, self.confusion_matrix = self.network.accuracy_f1score(self.x_test, self.y_test)
+        test_acc, test_f1score, self.confusion_matrix = self.network.accuracy_f1score(
+            self.x_test, self.y_test
+        )
         if self.verbose:
             print("=============== Final Test Accuracy ===============")
             print(f"acc:{test_acc:0.5f}, f1score:{test_f1score:0.5f}")
