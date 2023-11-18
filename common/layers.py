@@ -132,6 +132,7 @@ class BatchNormalization:
         # backward 시에 사용할 중간 데이터
         self.batch_size = None
         self.xc = None
+        self.xn = None
         self.std = None
         self.dgamma = None
         self.dbeta = None
@@ -148,27 +149,27 @@ class BatchNormalization:
     def __forward(self, x, train_flg):
         if self.running_mean is None:
             N, D = x.shape
-            self.running_mean = torch.zeros(D)
-            self.running_var = torch.zeros(D)
+            self.running_mean = torch.zeros(D, device=x.get_device())
+            self.running_var = torch.zeros(D, device=x.get_device())
             # 위의 두 줄 기존 np.zeros(D) 텐서 대응
 
-        if train_flg:
-            mu = x.mean(axis=0)
+        if train_flg or self.batch_size == None:
+            mu = torch.mean(x, dim=0)       #x.mean(axis=0)
             xc = x - mu
             var = torch.mean(xc**2, dim=0)  # np.mean(xc**2, axis=0)
             std = torch.sqrt(var + 10e-7)  # np.sqrt(var + 10e-7)
             xn = xc / std
-
             self.batch_size = x.shape[0]
             self.xc = xc
             self.xn = xn
             self.std = std
-            self.running_mean = (
-                self.momentum * self.running_mean + (1 - self.momentum) * mu
-            )
-            self.running_var = (
-                self.momentum * self.running_var + (1 - self.momentum) * var
-            )
+            if train_flg:
+                self.running_mean = (
+                    self.momentum * self.running_mean + (1 - self.momentum) * mu
+                )
+                self.running_var = (
+                    self.momentum * self.running_var + (1 - self.momentum) * var
+                )
         else:
             xc = x - self.running_mean
             xn = xc / ((torch.sqrt(self.running_var + 10e-7)))  # np.sqrt
@@ -243,10 +244,12 @@ class Convolution:
         dout = dout.permute(0, 2, 3, 1).reshape(-1, FN)
 
         self.db = torch.sum(dout, dim=0)
-        self.dW = torch.matmul(self.col.T, dout)
+        self.dW = torch.matmul(self.col.T.double(), dout.double())
+        #일단 버그나서 고쳐봄
         self.dW = self.dW.transpose(1, 0).reshape(FN, C, FH, FW)
 
-        dcol = torch.matmul(dout, self.col_W.T)
+        dcol = torch.matmul(dout.double(), self.col_W.T.double())
+        #마찬가지로 일단 버그나서 타입 맞춰줬음.
         dx = col2im(dcol, self.x.shape, FH, FW, self.stride, self.pad)
 
         return dx

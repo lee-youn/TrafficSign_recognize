@@ -5,7 +5,7 @@ import os
 import numpy as np
 import torch
 
-from common.layers import Convolution, Relu, Pooling, Affine, SoftmaxWithLoss
+from common.layers import Convolution, Relu, Pooling, Affine, SoftmaxWithLoss, BatchNormalization
 import pickle
 from collections import OrderedDict
 
@@ -15,9 +15,13 @@ sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도
 
 
 class SimpleConvNet(CNN):
-    """단순한 합성곱 신경망
-
+    """배치 정규화 추가된 단순한 합성곱 신경망
+    
+    기존:
     conv - relu - pool - affine - relu - affine - softmax
+
+    추가:
+    conv1 - bNorm1 - relu1 - pool1 - affine1 - bNorm2 - relu2 - affine2 - softmax
 
     Parameters
     ----------
@@ -48,9 +52,9 @@ class SimpleConvNet(CNN):
         filter_pad = conv_param["pad"]
         filter_stride = conv_param["stride"]
         input_size = input_dim[1]
-        conv_output_size = (
-            input_size - filter_size + 2 * filter_pad
-        ) / filter_stride + 1
+        conv_output_size = int((
+            input_size - filter_size + 2 * filter_pad) / filter_stride + 1
+        )
         pool_output_size = int(
             filter_num * (conv_output_size / 2) * (conv_output_size / 2)
         )
@@ -58,22 +62,38 @@ class SimpleConvNet(CNN):
         # 가중치 초기화
         self.params = {}
         rgen = np.random.default_rng(43)
+        #Conv1
         self.params["W1"] = weight_init_std * rgen.logistic(
             size=(filter_num, input_dim[0], filter_size, filter_size)
         )
         self.params["b1"] = np.zeros(filter_num)
+
+        #bNorm1
+        self.params["bG1"] = 1.0
+        self.params["bB1"] = 0
+
+        #Affine1
         self.params["W2"] = weight_init_std * rgen.logistic(
             size=(pool_output_size, hidden_size)
         )
         self.params["b2"] = np.zeros(hidden_size)
+
+        #bNorm2
+        self.params["bG2"] = 1.0
+        self.params["bB2"] = 0
+
+        #Affine2
         self.params["W3"] = weight_init_std * rgen.logistic(
             size=(hidden_size, output_size)
         )
         self.params["b3"] = np.zeros(output_size)
+        #가중치 초기화
+
 
         # 가중치를 tensor로 변경
         for key, value in self.params.items():
-            self.params[key] = torch.from_numpy(value).to(device)
+            if not ("bG" in key or "bB" in key):    #batchNorm 아닌 경우만.
+                self.params[key] = torch.from_numpy(value).to(device)
 
         # 계층 생성
         self.layers = OrderedDict()
@@ -83,18 +103,26 @@ class SimpleConvNet(CNN):
             conv_param["stride"],
             conv_param["pad"],
         )
+        self.layers["bNorm1"] = BatchNormalization(self.params["bG1"], self.params["bB1"]) # bNorm 추가
         self.layers["Relu1"] = Relu()
         self.layers["Pool1"] = Pooling(pool_h=2, pool_w=2, stride=2)
         self.layers["Affine1"] = Affine(self.params["W2"], self.params["b2"])
+        self.layers["bNorm2"] = BatchNormalization(self.params["bG2"], self.params["bB2"]) # bNorm 추가
         self.layers["Relu2"] = Relu()
         self.layers["Affine2"] = Affine(self.params["W3"], self.params["b3"])
 
         self.last_layer = SoftmaxWithLoss()
 
-    def predict(self, x):
-        for layer in self.layers.values():
-            x = layer.forward(x)
+    def predict(self, x, train_flg=True):
+        #for layer in self.layers.values():
+        #   x = layer.forward(x)
 
+        for layername, layervalue in self.layers.items():
+            if "bNorm" in layername:
+                x = layervalue.forward(x, train_flg=train_flg)
+            else:
+                x = layervalue.forward(x)
+        
         return x
 
     def loss(self, x, t):
@@ -110,7 +138,7 @@ class SimpleConvNet(CNN):
         return self.last_layer.forward(y, t)
 
     # accuracy, f1score를 return 하는 함수.
-    def accuracy_f1score(self, x, t, batch_size=100):
+    def accuracy_f1score(self, x, t, batch_size=64):
         # x : data
         # t : label
 
@@ -203,7 +231,9 @@ class SimpleConvNet(CNN):
         # 결과 저장
         grads = {}
         grads["W1"], grads["b1"] = self.layers["Conv1"].dW, self.layers["Conv1"].db
+        grads["bG1"], grads["bB1"] = self.layers["bNorm1"].dgamma, self.layers["bNorm1"].dbeta
         grads["W2"], grads["b2"] = self.layers["Affine1"].dW, self.layers["Affine1"].db
+        grads["bG2"], grads["bB2"] = self.layers["bNorm2"].dgamma, self.layers["bNorm2"].dbeta
         grads["W3"], grads["b3"] = self.layers["Affine2"].dW, self.layers["Affine2"].db
 
         return grads

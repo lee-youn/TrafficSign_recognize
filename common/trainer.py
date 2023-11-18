@@ -64,10 +64,11 @@ class Trainer:
         grads = self.network.gradient(x_batch, t_batch)
         self.optimizer.update(self.network.params, grads)
 
-        loss = self.network.loss(x_batch, t_batch).cpu().numpy()
-        self.train_loss_list.append(loss)
-        if self.verbose:
-            print(f"train loss: {loss:0.5f}")
+        if self.current_epoch != 0:
+            loss = self.network.loss(x_batch, t_batch).cpu().numpy()
+            self.train_loss_list.append(loss)
+            if self.verbose:
+                print(f"train loss: {loss:0.5f}")
 
         if self.current_iter % self.iter_per_epoch == 0:
             self.current_epoch += 1
@@ -79,9 +80,9 @@ class Trainer:
                 x_train_sample, t_train_sample = self.x_train[:t], self.y_train[:t]
                 x_test_sample, t_test_sample = self.x_test[:t], self.y_test[:t]
 
-            train_result = self.network.accuracy_f1score(x_train_sample, t_train_sample)
+            train_result = self.network.accuracy_f1score(x_train_sample, t_train_sample, self.batch_size)
             train_acc, train_f1, *_ = train_result
-            test_result = self.network.accuracy_f1score(x_test_sample, t_test_sample)
+            test_result = self.network.accuracy_f1score(x_test_sample, t_test_sample, self.batch_size)
             test_acc, test_f1, *_ = test_result
 
             self.train_acc_list.append(train_acc)
