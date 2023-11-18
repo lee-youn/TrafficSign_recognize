@@ -51,7 +51,6 @@ class Affine:
         self.db = None
 
     def forward(self, x):
-        print(f"x.shape:{x.shape}")
         # 텐서 대응
         self.original_x_shape = x.shape
         x = x.reshape(x.shape[0], -1)

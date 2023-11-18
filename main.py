@@ -4,6 +4,7 @@ from common.etc import print_gpu_info
 from common.plot import confusion_matrix, accuracy_graph
 from common.trainer import Trainer
 from data.load_data import load_data
+from models.SimpleConvNet import SimpleConvNet
 from models.VGG16 import VGG16
 
 if __name__ == "__main__":
@@ -11,19 +12,19 @@ if __name__ == "__main__":
     print_gpu_info(device)
 
     # Hyper Parameters - Fix
-    N = 64
+    N = 6400
     BATCH_SIZE = 64
 
     # Hyper Parameters - Flex
-    LR = 0.001
-    EPOCHS = 1
+    LR = 0.00001
+    EPOCHS = 20
     CONV_FILTER_NUM = 100
     PADDING = 0
     HIDDEN_SIZE = 100
 
     # Load data
     x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(
-        N_=N, print_=True, device_=device
+        N_=N, print_=False, device_=device
     )
 
     network = VGG16(
