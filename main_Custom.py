@@ -11,8 +11,8 @@ if __name__ == "__main__":
     print_gpu_info(device)
 
     # Hyper Parameters - Fix
-    N = 64000
-    BATCH_SIZE = 64
+    N = None
+    BATCH_SIZE = 1000
     CONV_FILTER_SIZE = 3
     CONV_STRIDE_SIZE = 1
 
@@ -20,16 +20,17 @@ if __name__ == "__main__":
     LR = 0.0001
     EPOCHS = 2
     HIDDEN_SIZE = 100
+    DROPOUT = True
+    BATCH_NORM = True
 
-
-    #conv layer 1
+    CONV_NUM = 2
+    # conv layer 1
     CONV1_FILTER_NUM = 20
     PADDING1 = 0
 
-    #conv layer 2
+    # conv layer 2
     CONV2_FILTER_NUM = 20
     PADDING2 = 0
-
 
     # Load data
     x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(
@@ -53,6 +54,8 @@ if __name__ == "__main__":
         hidden_size=HIDDEN_SIZE,
         weight_init_std=0.01,
         device=device,
+        dropout=DROPOUT,
+        batch_norm=BATCH_NORM,
     )
 
     trainer = Trainer(

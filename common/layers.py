@@ -102,10 +102,13 @@ class Dropout:
     def __init__(self, dropout_ratio=0.5):
         self.dropout_ratio = dropout_ratio
         self.mask = None
+        self.rng = np.random.default_rng(43)
 
     def forward(self, x, train_flg=True):
         if train_flg:
-            self.mask = np.random.rand(*x.shape) > self.dropout_ratio
+            self.mask = self.rng.random(size=x.shape) > self.dropout_ratio
+            self.mask = torch.from_numpy(self.mask).to(x.get_device())
+
             return x * self.mask
         else:
             return x * (1.0 - self.dropout_ratio)
@@ -154,7 +157,7 @@ class BatchNormalization:
             # 위의 두 줄 기존 np.zeros(D) 텐서 대응
 
         if train_flg or self.batch_size == None:
-            mu = torch.mean(x, dim=0)       #x.mean(axis=0)
+            mu = torch.mean(x, dim=0)  # x.mean(axis=0)
             xc = x - mu
             var = torch.mean(xc**2, dim=0)  # np.mean(xc**2, axis=0)
             std = torch.sqrt(var + 10e-7)  # np.sqrt(var + 10e-7)
@@ -245,11 +248,11 @@ class Convolution:
 
         self.db = torch.sum(dout, dim=0)
         self.dW = torch.matmul(self.col.T.double(), dout.double())
-        #일단 버그나서 고쳐봄
+        # 일단 버그나서 고쳐봄
         self.dW = self.dW.transpose(1, 0).reshape(FN, C, FH, FW)
 
         dcol = torch.matmul(dout.double(), self.col_W.T.double())
-        #마찬가지로 일단 버그나서 타입 맞춰줬음.
+        # 마찬가지로 일단 버그나서 타입 맞춰줬음.
         dx = col2im(dcol, self.x.shape, FH, FW, self.stride, self.pad)
 
         return dx
