@@ -21,7 +21,7 @@ class Custom(CNN):
     conv - relu - pool - affine - relu - affine - softmax
 
     추가:
-    conv1 - bNorm1 - relu1 - pool1 - affine1 - bNorm2 - relu2 - affine2 - softmax
+    conv1 - bNorm1 - relu1 - conv2 - bNorm2 - relu2 - pool1 - affine1 - bNorm3 - relu3 - affine2 - softmax
 
     Parameters
     ----------
@@ -35,27 +35,40 @@ class Custom(CNN):
     def __init__(
         self,
         input_dim=(3, 48, 48),
-        conv_param={"filter_num": 30, "filter_size": 5, "pad": 0, "stride": 1},
+        conv1_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
+        conv2_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
         hidden_size=100,
         output_size=43,
         weight_init_std=0.1,
         device="cpu",
     ):
         super().__init__(
-            input_dim, conv_param, hidden_size, output_size, weight_init_std, device
+            input_dim, conv1_param, hidden_size, output_size, weight_init_std, device
         )
 
-        filter_num = conv_param["filter_num"]
-        filter_size = conv_param["filter_size"]
-        filter_pad = conv_param["pad"]
-        filter_stride = conv_param["stride"]
+        filter_num = conv1_param["filter_num"]
+        filter_size = conv1_param["filter_size"]
+        filter_pad = conv1_param["pad"]
+        filter_stride = conv1_param["stride"]
         input_size = input_dim[1]
-        conv_output_size = int((
-            input_size - filter_size + 2 * filter_pad) / filter_stride + 1
+
+        filter2_num = conv2_param["filter_num"]
+        filter2_size = conv2_param["filter_size"]
+        filter2_pad = conv2_param["pad"]
+        filter2_stride = conv2_param["stride"]
+
+        conv1_output_size = int(
+            (input_size - filter_size + 2 * filter_pad) / filter_stride + 1
         )
+
+        conv2_output_size = int(
+            (conv1_output_size - filter2_size + 2 * filter2_pad) / filter2_stride + 1
+        )
+
         pool_output_size = int(
-            filter_num * (conv_output_size / 2) * (conv_output_size / 2)
+            filter2_num * (conv2_output_size / 2) * (conv2_output_size / 2)
         )
+
 
         # 가중치 초기화
         self.params = {}
@@ -68,19 +81,32 @@ class Custom(CNN):
         #bNorm1
         self.params["bG1"] = 1.0
         self.params["bB1"] = 0
-        #Affine1
+        #relu1 - none
+        #Conv2
         self.params["W2"] = weight_init_std * rgen.logistic(
-            size=(pool_output_size, hidden_size)
+            size=(filter2_num, filter_num, filter2_size, filter2_size)
         )
-        self.params["b2"] = np.zeros(hidden_size)
+        self.params["b2"] = np.zeros(filter2_num)
         #bNorm2
         self.params["bG2"] = 1.0
         self.params["bB2"] = 0
-        #Affine2
+        #relu2 - none
+        #pool1 - none
+        #Affine1
         self.params["W3"] = weight_init_std * rgen.logistic(
+            size=(pool_output_size, hidden_size)
+        )
+        self.params["b3"] = np.zeros(hidden_size)
+        #bNorm3
+        self.params["bG3"] = 1.0
+        self.params["bB3"] = 0
+        #relu3 - none
+        #Affine2
+        self.params["W4"] = weight_init_std * rgen.logistic(
             size=(hidden_size, output_size)
         )
-        self.params["b3"] = np.zeros(output_size)
+        self.params["b4"] = np.zeros(output_size)
+        #Softmax
         #가중치 초기화
 
 
@@ -94,16 +120,24 @@ class Custom(CNN):
         self.layers["Conv1"] = Convolution(
             self.params["W1"],
             self.params["b1"],
-            conv_param["stride"],
-            conv_param["pad"],
+            conv1_param["stride"],
+            conv1_param["pad"],
         )
-        self.layers["bNorm1"] = BatchNormalization(self.params["bG1"], self.params["bB1"]) # bNorm 추가
+        self.layers["bNorm1"] = BatchNormalization(self.params["bG1"], self.params["bB1"])
         self.layers["Relu1"] = Relu()
-        self.layers["Pool1"] = Pooling(pool_h=2, pool_w=2, stride=2)
-        self.layers["Affine1"] = Affine(self.params["W2"], self.params["b2"])
-        self.layers["bNorm2"] = BatchNormalization(self.params["bG2"], self.params["bB2"]) # bNorm 추가
+        self.layers["Conv2"] = Convolution(
+            self.params["W2"],
+            self.params["b2"],
+            conv2_param["stride"],
+            conv2_param["pad"],
+        )
+        self.layers["bNorm2"] = BatchNormalization(self.params["bG2"], self.params["bB2"])
         self.layers["Relu2"] = Relu()
-        self.layers["Affine2"] = Affine(self.params["W3"], self.params["b3"])
+        self.layers["Pool1"] = Pooling(pool_h=2, pool_w=2, stride=2)
+        self.layers["Affine1"] = Affine(self.params["W3"], self.params["b3"])
+        self.layers["bNorm3"] = BatchNormalization(self.params["bG3"], self.params["bB3"])
+        self.layers["Relu3"] = Relu()
+        self.layers["Affine2"] = Affine(self.params["W4"], self.params["b4"])
         self.last_layer = SoftmaxWithLoss()
 
 
@@ -144,12 +178,15 @@ class Custom(CNN):
         for layer in layers:
             dout = layer.backward(dout)
 
+
         # 결과 저장
         grads = {}
         grads["W1"], grads["b1"] = self.layers["Conv1"].dW, self.layers["Conv1"].db
         grads["bG1"], grads["bB1"] = self.layers["bNorm1"].dgamma, self.layers["bNorm1"].dbeta
-        grads["W2"], grads["b2"] = self.layers["Affine1"].dW, self.layers["Affine1"].db
+        grads["W2"], grads["b2"] = self.layers["Conv2"].dW, self.layers["Conv2"].db
         grads["bG2"], grads["bB2"] = self.layers["bNorm2"].dgamma, self.layers["bNorm2"].dbeta
-        grads["W3"], grads["b3"] = self.layers["Affine2"].dW, self.layers["Affine2"].db
+        grads["W3"], grads["b3"] = self.layers["Affine1"].dW, self.layers["Affine1"].db
+        grads["bG3"], grads["bB3"] = self.layers["bNorm3"].dgamma, self.layers["bNorm3"].dbeta
+        grads["W4"], grads["b4"] = self.layers["Affine2"].dW, self.layers["Affine2"].db
 
         return grads

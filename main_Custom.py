@@ -13,25 +13,42 @@ if __name__ == "__main__":
     # Hyper Parameters - Fix
     N = 64000
     BATCH_SIZE = 64
+    CONV_FILTER_SIZE = 3
+    CONV_STRIDE_SIZE = 1
 
     # Hyper Parameters - Flex
-    LR = 0.001
-    EPOCHS = 1
-    CONV_FILTER_NUM = 100
-    PADDING = 0
+    LR = 0.0001
+    EPOCHS = 2
     HIDDEN_SIZE = 100
+
+
+    #conv layer 1
+    CONV1_FILTER_NUM = 20
+    PADDING1 = 0
+
+    #conv layer 2
+    CONV2_FILTER_NUM = 20
+    PADDING2 = 0
+
 
     # Load data
     x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(
         N_=N, print_=True, device_=device
     )
+    # RGB, 48*48
 
     network = Custom(
-        conv_param={
-            "filter_num": CONV_FILTER_NUM,
-            "filter_size": 3,
-            "pad": PADDING,
-            "stride": 1,
+        conv1_param={
+            "filter_num": CONV1_FILTER_NUM,
+            "filter_size": CONV_FILTER_SIZE,
+            "pad": PADDING1,
+            "stride": CONV_STRIDE_SIZE,
+        },
+        conv2_param={
+            "filter_num": CONV2_FILTER_NUM,
+            "filter_size": CONV_FILTER_SIZE,
+            "pad": PADDING2,
+            "stride": CONV_STRIDE_SIZE,
         },
         hidden_size=HIDDEN_SIZE,
         weight_init_std=0.01,
