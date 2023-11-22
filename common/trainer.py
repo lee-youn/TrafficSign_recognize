@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 sys.path.append(os.pardir)  # 부모 디렉터리의 파일을 가져올 수 있도록 설정
 from common.optimizer import *
@@ -63,6 +64,8 @@ class Trainer:
         self.train_f1_list = []
         self.test_f1_list = []
 
+        self.timestamp = [time.time()]
+
     def train_step(self, test_flg=False):
         batch_mask = np.random.choice(self.train_size, self.batch_size)
         x_batch = self.x_train[batch_mask]
@@ -76,7 +79,13 @@ class Trainer:
             self.train_loss_list.append(loss)
             if self.verbose:
                 if int(self.current_iter / self.max_iter * 100) > self.progress:
-                    print(f"progress:{self.progress}% \t train loss: {loss:0.5f}")
+                    self.timestamp.append(time.time())
+                    delta_time = int(self.timestamp[-1] - self.timestamp[0])
+                    print(
+                        f"TimeStamp: {delta_time:<3} \t"
+                        f"progress: {self.progress}% \t"
+                        f"train loss: {loss:0.5f}"
+                    )
 
         if self.current_iter % self.iter_per_epoch == 0:
             self.current_epoch += 1
@@ -116,7 +125,6 @@ class Trainer:
                 )
         self.progress = int(self.current_iter / self.max_iter * 100)
         self.current_iter += 1
-        
 
     def train(self):
         for _ in range(self.max_iter):

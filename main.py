@@ -12,12 +12,12 @@ if __name__ == "__main__":
     print_gpu_info(device)
 
     # Hyper Parameters - Fix
-    N = None
+    N = 64000
     BATCH_SIZE = 64
 
     # Hyper Parameters - Flex
-    LR = 0.000001
-    EPOCHS = 30
+    LR = 0.00001
+    EPOCHS = 10
     CONV_FILTER_NUM = 100
     PADDING = 0
     HIDDEN_SIZE = 100

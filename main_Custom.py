@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     # Hyper Parameters - Flex
     LR = 0.00001
-    EPOCHS = 30
+    EPOCHS = 10
     HIDDEN_SIZE = 100
     DROPOUT = True
     BATCH_NORM = True
