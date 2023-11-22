@@ -44,6 +44,8 @@ if __name__ == "__main__":
         y_train=y_train,
         x_test=x_test,
         y_test=y_test,
+        x_validation=x_validation,
+        y_validation=y_validation,
         epochs=EPOCHS,
         mini_batch_size=BATCH_SIZE,
         optimizer="Adam",
