@@ -54,6 +54,7 @@ class Trainer:
         self.max_iter = int(epochs * self.iter_per_epoch)
         self.current_iter = 0
         self.current_epoch = 0
+        self.progress = 0
 
         self.confusion_matrix = None
         self.train_loss_list = []
@@ -74,7 +75,8 @@ class Trainer:
             loss = self.network.loss(x_batch, t_batch).cpu().numpy()
             self.train_loss_list.append(loss)
             if self.verbose:
-                print(f"train loss: {loss:0.5f}")
+                if int(self.current_iter / self.max_iter * 100) > self.progress:
+                    print(f"progress:{self.progress}% \t train loss: {loss:0.5f}")
 
         if self.current_iter % self.iter_per_epoch == 0:
             self.current_epoch += 1
@@ -112,7 +114,9 @@ class Trainer:
                     f"=== epoch:{self.current_epoch}, train acc:{train_acc}, test acc:{test_acc}, "
                     + f"train f1score:{train_f1:0.5f}, test f1score:{test_f1:0.5f} ==="
                 )
+        self.progress = int(self.current_iter / self.max_iter * 100)
         self.current_iter += 1
+        
 
     def train(self):
         for _ in range(self.max_iter):

@@ -11,25 +11,25 @@ if __name__ == "__main__":
     print_gpu_info(device)
 
     # Hyper Parameters - Fix
-    N = None
-    BATCH_SIZE = 1000
+    N = 64000
+    BATCH_SIZE = 64
     CONV_FILTER_SIZE = 3
     CONV_STRIDE_SIZE = 1
 
     # Hyper Parameters - Flex
-    LR = 0.0001
-    EPOCHS = 2
+    LR = 0.00001
+    EPOCHS = 30
     HIDDEN_SIZE = 100
     DROPOUT = True
     BATCH_NORM = True
 
     CONV_NUM = 2
     # conv layer 1
-    CONV1_FILTER_NUM = 20
+    CONV1_FILTER_NUM = 10
     PADDING1 = 0
 
     # conv layer 2
-    CONV2_FILTER_NUM = 20
+    CONV2_FILTER_NUM = 10
     PADDING2 = 0
 
     # Load data
