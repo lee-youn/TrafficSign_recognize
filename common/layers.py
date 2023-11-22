@@ -159,7 +159,7 @@ class BatchNormalization:
         if train_flg or self.batch_size == None:
             mu = torch.mean(x, dim=0)  # x.mean(axis=0)
             xc = x - mu
-            var = torch.mean(xc ** 2, dim=0)  # np.mean(xc**2, axis=0)
+            var = torch.mean(xc**2, dim=0)  # np.mean(xc**2, axis=0)
             std = torch.sqrt(var + 10e-7)  # np.sqrt(var + 10e-7)
             xn = xc / std
             self.batch_size = x.shape[0]
@@ -168,10 +168,10 @@ class BatchNormalization:
             self.std = std
             if train_flg:
                 self.running_mean = (
-                        self.momentum * self.running_mean + (1 - self.momentum) * mu
+                    self.momentum * self.running_mean + (1 - self.momentum) * mu
                 )
                 self.running_var = (
-                        self.momentum * self.running_var + (1 - self.momentum) * var
+                    self.momentum * self.running_var + (1 - self.momentum) * var
                 )
         else:
             xc = x - self.running_mean

@@ -41,17 +41,17 @@ class Custom(CNN):
     """
 
     def __init__(
-            self,
-            input_dim=(3, 48, 48),
-            conv_num=2,
-            conv1_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
-            conv2_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
-            hidden_size=100,
-            output_size=43,
-            weight_init_std=0.1,
-            device="cpu",
-            batch_norm=False,
-            dropout=False,
+        self,
+        input_dim=(3, 48, 48),
+        conv_num=2,
+        conv1_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
+        conv2_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
+        hidden_size=100,
+        output_size=43,
+        weight_init_std=0.1,
+        device="cpu",
+        batch_norm=False,
+        dropout=False,
     ):
         super().__init__(
             input_dim, conv1_param, hidden_size, output_size, weight_init_std, device

@@ -22,7 +22,9 @@ if __name__ == "__main__":
     HIDDEN_SIZE = 100
 
     # Load data
-    x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(N_=N, print_=True)
+    x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(
+        N_=N, print_=True
+    )
 
     network = SimpleConvNet(
         conv_param={

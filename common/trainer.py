@@ -9,21 +9,21 @@ class Trainer:
     """신경망 훈련을 대신 해주는 클래스"""
 
     def __init__(
-            self,
-            network,
-            x_train,
-            y_train,
-            x_test,
-            y_test,
-            x_validation,
-            y_validation,
-            epochs=20,
-            mini_batch_size=100,
-            optimizer="SGD",
-            optimizer_param={"lr": 0.01},
-            evaluate_sample_num_per_epoch=None,
-            verbose=True,
-            device="cpu",
+        self,
+        network,
+        x_train,
+        y_train,
+        x_test,
+        y_test,
+        x_validation,
+        y_validation,
+        epochs=20,
+        mini_batch_size=100,
+        optimizer="SGD",
+        optimizer_param={"lr": 0.01},
+        evaluate_sample_num_per_epoch=None,
+        verbose=True,
+        device="cpu",
     ):
         self.network = network
         self.x_train = x_train
@@ -93,9 +93,13 @@ class Trainer:
                     x_test_sample, t_test_sample = self.x_test[:t], self.y_test[:t]
 
             # 변수명은 test_result이나 testFlg==False 인 경우 validation.
-            train_result = self.network.accuracy_f1score(x_train_sample, t_train_sample, self.batch_size)
+            train_result = self.network.accuracy_f1score(
+                x_train_sample, t_train_sample, self.batch_size
+            )
             train_acc, train_f1, *_ = train_result
-            test_result = self.network.accuracy_f1score(x_test_sample, t_test_sample, self.batch_size)
+            test_result = self.network.accuracy_f1score(
+                x_test_sample, t_test_sample, self.batch_size
+            )
             test_acc, test_f1, *_ = test_result
 
             self.train_acc_list.append(train_acc)

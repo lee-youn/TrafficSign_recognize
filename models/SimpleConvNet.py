@@ -40,46 +40,43 @@ class SimpleConvNet(CNN):
             input_dim, conv_param, hidden_size, output_size, weight_init_std, device
         )
 
-        #변수 정리
+        # 변수 정리
         filter_num = conv_param["filter_num"]
         filter_size = conv_param["filter_size"]
         filter_pad = conv_param["pad"]
         filter_stride = conv_param["stride"]
         input_size = input_dim[1]
-        conv_output_size = int((
-            input_size - filter_size + 2 * filter_pad) / filter_stride + 1
+        conv_output_size = int(
+            (input_size - filter_size + 2 * filter_pad) / filter_stride + 1
         )
         pool_output_size = int(
             filter_num * (conv_output_size / 2) * (conv_output_size / 2)
         )
 
-
         # 가중치 초기화
         self.params = {}
         rgen = np.random.default_rng(43)
-        #Conv1
+        # Conv1
         self.params["W1"] = weight_init_std * rgen.logistic(
             size=(filter_num, input_dim[0], filter_size, filter_size)
         )
         self.params["b1"] = np.zeros(filter_num)
-        #Affine1
+        # Affine1
         self.params["W2"] = weight_init_std * rgen.logistic(
             size=(pool_output_size, hidden_size)
         )
         self.params["b2"] = np.zeros(hidden_size)
-        #Affine2
+        # Affine2
         self.params["W3"] = weight_init_std * rgen.logistic(
             size=(hidden_size, output_size)
         )
         self.params["b3"] = np.zeros(output_size)
 
-
         # 가중치를 tensor로 변경
         for key, value in self.params.items():
             self.params[key] = torch.from_numpy(value).to(device)
 
-
-        #레이어 생성
+        # 레이어 생성
         self.layers = OrderedDict()
         self.layers["Conv1"] = Convolution(
             self.params["W1"],
@@ -94,10 +91,8 @@ class SimpleConvNet(CNN):
         self.layers["Affine2"] = Affine(self.params["W3"], self.params["b3"])
         self.last_layer = SoftmaxWithLoss()
 
-
     # 부모 클래스에 포함된 함수들.
     # def predict(self, x):
     # def loss(self, x, t):
     # def accuracy_f1score(self, x, t, batch_size=100):
     # def gradient(self, x, t):
-

@@ -6,8 +6,12 @@ from matplotlib import pyplot as plt
 def accuracy_graph(trainer_, epoch_):
     markers = {"train": "o", "test": "s"}
     x = torch.arange(epoch_)
-    plt.plot(x, trainer_.train_acc_list, marker=markers["train"], label="train", markevery=2)
-    plt.plot(x, trainer_.test_acc_list, marker=markers["test"], label="test", markevery=2)
+    plt.plot(
+        x, trainer_.train_acc_list, marker=markers["train"], label="train", markevery=2
+    )
+    plt.plot(
+        x, trainer_.test_acc_list, marker=markers["test"], label="test", markevery=2
+    )
     plt.xlabel("epochs")
     plt.ylabel("accuracy")
     plt.ylim(0, 1.0)

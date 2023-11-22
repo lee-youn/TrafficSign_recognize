@@ -23,8 +23,9 @@ if __name__ == "__main__":
     HIDDEN_SIZE = 100
 
     # Load data
-    x_train, y_train, x_validation, y_validation, x_test, y_test = \
-        load_data(N_=N, print_=False)
+    x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(
+        N_=N, print_=False
+    )
 
     network = VGG16(
         conv_param={
@@ -51,7 +52,7 @@ if __name__ == "__main__":
         optimizer="Adam",
         optimizer_param={"lr": LR},
         evaluate_sample_num_per_epoch=1000,
-        device=device
+        device=device,
     )
     trainer.train()
 
