@@ -15,6 +15,8 @@ class Trainer:
         y_train,
         x_test,
         y_test,
+        x_validation,
+        y_validation,
         epochs=20,
         mini_batch_size=100,
         optimizer="SGD",
@@ -27,6 +29,8 @@ class Trainer:
         self.y_train = y_train
         self.x_test = x_test
         self.y_test = y_test
+        self.x_val = x_validation
+        self.y_val = y_validation
         self.epochs = epochs
         self.batch_size = mini_batch_size
         self.evaluate_sample_num_per_epoch = evaluate_sample_num_per_epoch
@@ -56,7 +60,7 @@ class Trainer:
         self.train_f1_list = []
         self.test_f1_list = []
 
-    def train_step(self):
+    def train_step(self, testFlg=False):
         batch_mask = np.random.choice(self.train_size, self.batch_size)
         x_batch = self.x_train[batch_mask]
         t_batch = self.y_train[batch_mask]
@@ -74,12 +78,19 @@ class Trainer:
             self.current_epoch += 1
 
             x_train_sample, t_train_sample = self.x_train, self.y_train
-            x_test_sample, t_test_sample = self.x_test, self.y_test
+            x_test_sample, t_test_sample = self.x_val, self.y_val
+            #testFlg True가 아니면 validation data로 시행.
+            if testFlg == True:
+                x_test_sample, t_test_sample = self.x_test, self.y_test
+
             if self.evaluate_sample_num_per_epoch is not None:
                 t = self.evaluate_sample_num_per_epoch
                 x_train_sample, t_train_sample = self.x_train[:t], self.y_train[:t]
-                x_test_sample, t_test_sample = self.x_test[:t], self.y_test[:t]
+                x_test_sample, t_test_sample = self.x_val[:t], self.y_val[:t]
+                if testFlg == True:
+                    x_test_sample, t_test_sample = self.x_test[:t], self.y_test[:t]
 
+            # 변수명은 test_result이나 testFlg==False 인 경우 validation.
             train_result = self.network.accuracy_f1score(x_train_sample, t_train_sample, self.batch_size)
             train_acc, train_f1, *_ = train_result
             test_result = self.network.accuracy_f1score(x_test_sample, t_test_sample, self.batch_size)
@@ -102,6 +113,7 @@ class Trainer:
             self.train_step()
 
         # accuracy -> accuracy_f1score 변경에 따른 수정.
+        # Final Test Accuracy만 test Data 사용.
         test_acc, test_f1score, self.confusion_matrix = self.network.accuracy_f1score(
             self.x_test, self.y_test
         )
