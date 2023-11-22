@@ -33,9 +33,7 @@ if __name__ == "__main__":
     PADDING2 = 0
 
     # Load data
-    x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(
-        N_=N, print_=True, device_=device
-    )
+    x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(N_=N, print_=True)
     # RGB, 48*48
 
     network = Custom(
@@ -64,8 +62,8 @@ if __name__ == "__main__":
         y_train=y_train,
         x_test=x_test,
         y_test=y_test,
-        x_validation = x_validation,
-        y_validation= y_validation,
+        x_validation=x_validation,
+        y_validation=y_validation,
         epochs=EPOCHS,
         mini_batch_size=BATCH_SIZE,
         optimizer="Adam",

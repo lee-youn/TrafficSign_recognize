@@ -16,16 +16,15 @@ if __name__ == "__main__":
     BATCH_SIZE = 64
 
     # Hyper Parameters - Flex
-    LR = 0.00001
-    EPOCHS = 10
+    LR = 0.000001
+    EPOCHS = 30
     CONV_FILTER_NUM = 100
     PADDING = 0
     HIDDEN_SIZE = 100
 
     # Load data
-    x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(
-        N_=N, print_=False, device_=device
-    )
+    x_train, y_train, x_validation, y_validation, x_test, y_test = \
+        load_data(N_=N, print_=False)
 
     network = VGG16(
         conv_param={
@@ -43,6 +42,8 @@ if __name__ == "__main__":
         network=network,
         x_train=x_train,
         y_train=y_train,
+        x_validation=x_validation,
+        y_validation=y_validation,
         x_test=x_test,
         y_test=y_test,
         epochs=EPOCHS,
@@ -50,6 +51,7 @@ if __name__ == "__main__":
         optimizer="Adam",
         optimizer_param={"lr": LR},
         evaluate_sample_num_per_epoch=1000,
+        device=device
     )
     trainer.train()
 

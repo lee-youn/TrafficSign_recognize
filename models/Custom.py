@@ -41,17 +41,17 @@ class Custom(CNN):
     """
 
     def __init__(
-        self,
-        input_dim=(3, 48, 48),
-        conv_num=2,
-        conv1_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
-        conv2_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
-        hidden_size=100,
-        output_size=43,
-        weight_init_std=0.1,
-        device="cpu",
-        batch_norm=False,
-        dropout=False,
+            self,
+            input_dim=(3, 48, 48),
+            conv_num=2,
+            conv1_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
+            conv2_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
+            hidden_size=100,
+            output_size=43,
+            weight_init_std=0.1,
+            device="cpu",
+            batch_norm=False,
+            dropout=False,
     ):
         super().__init__(
             input_dim, conv1_param, hidden_size, output_size, weight_init_std, device
@@ -155,11 +155,12 @@ class Custom(CNN):
         self.last_layer = SoftmaxWithLoss()
 
     def predict(self, x, train_flg=True):
-        for layername, layervalue in self.layers.items():
-            if "bNorm" in layername:
-                x = layervalue.forward(x, train_flg=train_flg)
+        x = x.to(self.device)
+        for layer_name, layer_value in self.layers.items():
+            if "bNorm" in layer_name:
+                x = layer_value.forward(x, train_flg=train_flg)
             else:
-                x = layervalue.forward(x)
+                x = layer_value.forward(x)
 
         return x
 

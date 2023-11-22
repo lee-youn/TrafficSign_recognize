@@ -31,13 +31,13 @@ class VGG16(CNN):
     """
 
     def __init__(
-        self,
-        input_dim=(3, 48, 48),
-        conv_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
-        hidden_size=100,
-        output_size=43,
-        weight_init_std=0.1,
-        device="cpu",
+            self,
+            input_dim=(3, 48, 48),
+            conv_param={"filter_num": 30, "filter_size": 3, "pad": 0, "stride": 1},
+            hidden_size=100,
+            output_size=43,
+            weight_init_std=0.1,
+            device="cpu",
     ):
         super().__init__(
             input_dim, conv_param, hidden_size, output_size, weight_init_std, device
@@ -48,7 +48,7 @@ class VGG16(CNN):
         for i in range(1, 5):
             for _ in range(2 if i not in range(3, 6) else 3):
                 filter_nums.append(2 ** (i + 5))
-        filter_nums.extend([2**9] * 3)
+        filter_nums.extend([2 ** 9] * 3)
 
         fc_hidden_size = [512, 4096, 4096]
         fc_output_size = [4096, 4096, 43]
@@ -70,7 +70,7 @@ class VGG16(CNN):
 
         # 가중치를 tensor로 변경
         for key, value in self.params.items():
-            self.params[key] = torch.from_numpy(value).to(device)
+            self.params[key] = torch.from_numpy(value).to(self.device)
 
         # 계층 생성
         self.layers = OrderedDict()
@@ -90,17 +90,11 @@ class VGG16(CNN):
         # idx_c: 13
         for i in range(1, 4):
             self.layers[f"Affine{i}"] = Affine(
-                self.params[f"W{idx_c+i}"], self.params[f"b{idx_c+i}"]
+                self.params[f"W{idx_c + i}"], self.params[f"b{idx_c + i}"]
             )
             if i != 3:
-                self.layers[f"Relu{idx_c+i}"] = Relu()
+                self.layers[f"Relu{idx_c + i}"] = Relu()
         self.last_layer = SoftmaxWithLoss()
-
-    def predict(self, x):
-        for layer in self.layers.values():
-            x = layer.forward(x)
-
-        return x
 
     def loss(self, x, t):
         """
@@ -130,9 +124,9 @@ class VGG16(CNN):
         # range(train data 개수 / batch_size)
         for i in range(int(x.shape[0] / batch_size)):
             # i번째 batch의 data list
-            tx = x[i * batch_size : (i + 1) * batch_size]
+            tx = x[i * batch_size: (i + 1) * batch_size]
             # i번째 batch의 label list
-            tt = t[i * batch_size : (i + 1) * batch_size].cpu().numpy()
+            tt = t[i * batch_size: (i + 1) * batch_size].cpu().numpy()
 
             # 매 batch당 classification
             y = self.predict(tx).cpu().numpy()
@@ -194,6 +188,9 @@ class VGG16(CNN):
             grads['b1']、grads['b2']、... 각 층의 편향
         """
         # forward
+        x = x.to(self.device)
+        t = t.to(self.device)
+
         self.loss(x, t)
 
         # backward
@@ -214,8 +211,8 @@ class VGG16(CNN):
             )
         for i in range(14, 17):
             grads[f"W{i}"], grads[f"b{i}"] = (
-                self.layers[f"Affine{i-13}"].dW,
-                self.layers[f"Affine{i-13}"].db,
+                self.layers[f"Affine{i - 13}"].dW,
+                self.layers[f"Affine{i - 13}"].db,
             )
 
         return grads

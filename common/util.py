@@ -9,10 +9,10 @@ def smooth_curve(x):
     참고：http://glowingpython.blogspot.jp/2012/02/convolution-with-numpy.html
     """
     window_len = 11
-    s = torch.r_[x[window_len - 1 : 0 : -1], x, x[-1:-window_len:-1]]
+    s = torch.r_[x[window_len - 1: 0: -1], x, x[-1:-window_len:-1]]
     w = torch.kaiser_window(window_len, beta=2)
     y = torch.convolve(w / w.sum(), s, mode="valid")
-    return y[5 : len(y) - 5]
+    return y[5: len(y) - 5]
 
 
 def shuffle_dataset(x, t):
@@ -104,4 +104,4 @@ def col2im(col, input_shape, filter_h, filter_w, stride=1, pad=0):
             x_max = x + stride * out_w
             img[:, :, y:y_max:stride, x:x_max:stride] += col[:, :, y, x, :, :]
 
-    return img[:, :, pad : H + pad, pad : W + pad]
+    return img[:, :, pad: H + pad, pad: W + pad]

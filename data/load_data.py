@@ -5,7 +5,7 @@ import torch
 import numpy as np
 
 
-def load_data(N_=None, print_=False, device_="cpu"):
+def load_data(N_=None, print_=False):
     # Data shape
     # train      (N,     3,48,48)
     # validation (N,     3,48,48)
@@ -56,12 +56,12 @@ def load_data(N_=None, print_=False, device_="cpu"):
         x_test = np.transpose(x_test, (0, 3, 1, 2))
 
         # Convert to tensor
-        x_train = torch.from_numpy(x_train).to(device_)
-        y_train = torch.from_numpy(y_train).to(device_)
-        x_validation = torch.from_numpy(x_validation).to(device_)
-        y_validation = torch.from_numpy(y_validation).to(device_)
-        x_test = torch.from_numpy(x_test).to(device_)
-        y_test = torch.from_numpy(y_test).to(device_)
+        x_train = torch.from_numpy(x_train)
+        y_train = torch.from_numpy(y_train)
+        x_validation = torch.from_numpy(x_validation)
+        y_validation = torch.from_numpy(y_validation)
+        x_test = torch.from_numpy(x_test)
+        y_test = torch.from_numpy(y_test)
 
     # Check point
     # Showing shapes of arrays after splitting

@@ -28,19 +28,21 @@ class CNN:
     """
 
     def __init__(
-        self,
-        input_dim=(3, 48, 48),
-        conv_param={"filter_num": 30, "filter_size": 5, "pad": 0, "stride": 1},
-        hidden_size=100,
-        output_size=43,
-        weight_init_std=0.1,
-        device="cpu",
+            self,
+            input_dim=(3, 48, 48),
+            conv_param={"filter_num": 30, "filter_size": 5, "pad": 0, "stride": 1},
+            hidden_size=100,
+            output_size=43,
+            weight_init_std=0.1,
+            device="cpu",
     ):
         # Confusion Matrix 연산을 위한 label 수 저장.
         self.output_size = output_size
+        self.device = device
         self.confusion_matrix = None
 
     def predict(self, x):
+        x = x.to(self.device)
         for layer in self.layers.values():
             x = layer.forward(x)
 
@@ -62,6 +64,9 @@ class CNN:
         # x : data
         # t : label
 
+        x = x.to(self.device)
+        t = t.to(self.device)
+
         # one hot label -> normal label
         if t.ndim != 1:
             t = torch.argmax(t, dim=1)
@@ -73,9 +78,9 @@ class CNN:
         # range(train data 개수 / batch_size)
         for i in range(int(x.shape[0] / batch_size)):
             # i번째 batch의 data list
-            tx = x[i * batch_size : (i + 1) * batch_size]
+            tx = x[i * batch_size: (i + 1) * batch_size]
             # i번째 batch의 label list
-            tt = t[i * batch_size : (i + 1) * batch_size].cpu().numpy()
+            tt = t[i * batch_size: (i + 1) * batch_size].cpu().numpy()
 
             # 매 batch당 classification
             y = self.predict(tx).cpu().numpy()

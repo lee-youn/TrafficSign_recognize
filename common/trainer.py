@@ -9,20 +9,21 @@ class Trainer:
     """신경망 훈련을 대신 해주는 클래스"""
 
     def __init__(
-        self,
-        network,
-        x_train,
-        y_train,
-        x_test,
-        y_test,
-        x_validation,
-        y_validation,
-        epochs=20,
-        mini_batch_size=100,
-        optimizer="SGD",
-        optimizer_param={"lr": 0.01},
-        evaluate_sample_num_per_epoch=None,
-        verbose=True,
+            self,
+            network,
+            x_train,
+            y_train,
+            x_test,
+            y_test,
+            x_validation,
+            y_validation,
+            epochs=20,
+            mini_batch_size=100,
+            optimizer="SGD",
+            optimizer_param={"lr": 0.01},
+            evaluate_sample_num_per_epoch=None,
+            verbose=True,
+            device="cpu",
     ):
         self.network = network
         self.x_train = x_train
@@ -35,6 +36,7 @@ class Trainer:
         self.batch_size = mini_batch_size
         self.evaluate_sample_num_per_epoch = evaluate_sample_num_per_epoch
         self.verbose = verbose
+        self.device = device
 
         # optimizer
         optimizer_class_dict = {
@@ -60,7 +62,7 @@ class Trainer:
         self.train_f1_list = []
         self.test_f1_list = []
 
-    def train_step(self, testFlg=False):
+    def train_step(self, test_flg=False):
         batch_mask = np.random.choice(self.train_size, self.batch_size)
         x_batch = self.x_train[batch_mask]
         t_batch = self.y_train[batch_mask]
@@ -79,15 +81,15 @@ class Trainer:
 
             x_train_sample, t_train_sample = self.x_train, self.y_train
             x_test_sample, t_test_sample = self.x_val, self.y_val
-            #testFlg True가 아니면 validation data로 시행.
-            if testFlg == True:
+            # testFlg True가 아니면 validation data로 시행.
+            if test_flg == True:
                 x_test_sample, t_test_sample = self.x_test, self.y_test
 
             if self.evaluate_sample_num_per_epoch is not None:
                 t = self.evaluate_sample_num_per_epoch
                 x_train_sample, t_train_sample = self.x_train[:t], self.y_train[:t]
                 x_test_sample, t_test_sample = self.x_val[:t], self.y_val[:t]
-                if testFlg == True:
+                if test_flg == True:
                     x_test_sample, t_test_sample = self.x_test[:t], self.y_test[:t]
 
             # 변수명은 test_result이나 testFlg==False 인 경우 validation.
