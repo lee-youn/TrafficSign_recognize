@@ -26,3 +26,42 @@ def confusion_matrix(trainer_):
     for (x, y), value in np.ndenumerate(trainer_.confusion_matrix):
         plt.text(x, y, f"{int(value) if value != 0 else ' '}", va="center", ha="center")
     plt.show()
+
+
+def print_images(key_: str, x_: torch.Tensor):
+    x = x_[0][:10].cpu().numpy()
+
+    plt.figure(figsize=(20, 3))
+    plt.suptitle(key_ + f": {x.shape[1]}*{x.shape[2 ]}", fontsize=40)
+
+    for idx, img in enumerate(x):
+        plt.subplot(1, 10, idx + 1)
+        plt.imshow(img)
+        plt.axis("off")
+
+    plt.show()
+
+
+def loss_graph(trainer_, epoch_):
+    losses = trainer_.train_loss_list
+    epochs = range(epoch_)
+    minibatches = range(len(losses))
+
+    number_per_epoch = len(losses) // epoch_
+    losses_per_epoch = []
+    for i in range(epoch_):
+        losses_per_epoch.append(
+            np.mean(losses[number_per_epoch * i : number_per_epoch * (i + 1)])
+        )
+
+    plt.figure(figsize=(6, 6))
+    plt.title("Train Loss", fontsize=20)
+    plt.xlabel("mini_batch")
+    plt.ylabel("loss")
+
+    # losses_per_epoch
+    plt.plot(minibatches, losses)
+    ax2 = plt.twiny()
+    ax2.plot(epochs, losses_per_epoch, "ro--", markevery=epoch_ // 5)
+
+    plt.show()

@@ -6,6 +6,7 @@ from collections import OrderedDict
 
 from common.gradient import numerical_gradient
 from common.layers import *
+from common.plot import print_images
 
 sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도록 설정
 
@@ -18,13 +19,11 @@ class CNN:
 
     Parameters
     ----------
-    input_size : 입력 크기（MNIST의 경우엔 784）
+    input_size : 입력 크기（3 * 48 * 48）
     hidden_size_list : 각 은닉층의 뉴런 수를 담은 리스트（e.g. [100, 100, 100]）
-    output_size : 출력 크기（MNIST의 경우엔 10）
+    output_size : 43
     activation : 활성화 함수 - 'relu' 혹은 'sigmoid'
-    weight_init_std : 가중치의 표준편차 지정（e.g. 0.01）
-        'relu'나 'he'로 지정하면 'He 초깃값'으로 설정
-        'sigmoid'나 'xavier'로 지정하면 'Xavier 초깃값'으로 설정
+    weight_init_std : 0.01
     """
 
     def __init__(
@@ -34,17 +33,23 @@ class CNN:
         hidden_size=100,
         output_size=43,
         weight_init_std=0.1,
+        visualize=False,
         device="cpu",
     ):
         # Confusion Matrix 연산을 위한 label 수 저장.
         self.output_size = output_size
-        self.device = device
         self.confusion_matrix = None
+        self.device = device
+        self.visualize = visualize
 
     def predict(self, x):
         x = x.to(self.device)
-        for layer in self.layers.values():
+
+        for key, layer in self.layers.items():
             x = layer.forward(x)
+
+            if self.visualize:
+                print_images(key, x)
 
         return x
 

@@ -12,12 +12,7 @@ class Trainer:
     def __init__(
         self,
         network,
-        x_train,
-        y_train,
-        x_test,
-        y_test,
-        x_validation,
-        y_validation,
+        datas,
         epochs=20,
         mini_batch_size=100,
         optimizer="SGD",
@@ -27,12 +22,14 @@ class Trainer:
         device="cpu",
     ):
         self.network = network
-        self.x_train = x_train
-        self.y_train = y_train
-        self.x_test = x_test
-        self.y_test = y_test
-        self.x_val = x_validation
-        self.y_val = y_validation
+        (
+            self.x_train,
+            self.y_train,
+            self.x_valid,
+            self.y_valid,
+            self.x_test,
+            self.y_test,
+        ) = datas
         self.epochs = epochs
         self.batch_size = mini_batch_size
         self.evaluate_sample_num_per_epoch = evaluate_sample_num_per_epoch
@@ -50,7 +47,7 @@ class Trainer:
         }
         self.optimizer = optimizer_class_dict[optimizer.lower()](**optimizer_param)
 
-        self.train_size = x_train.shape[0]
+        self.train_size = self.x_train.shape[0]
         self.iter_per_epoch = max(self.train_size / mini_batch_size, 1)
         self.max_iter = int(epochs * self.iter_per_epoch)
         self.current_iter = 0
@@ -82,25 +79,28 @@ class Trainer:
                     self.timestamp.append(time.time())
                     delta_time = int(self.timestamp[-1] - self.timestamp[0])
                     print(
-                        f"TimeStamp: {delta_time:<3} \t"
-                        f"progress: {self.progress}% \t"
-                        f"train loss: {loss:0.5f}"
+                        f"TimeStamp: {delta_time:<4}    "
+                        f"progress: {self.progress + 1}%    "
+                        f"train_loss: {loss:0.5f}"
                     )
 
         if self.current_iter % self.iter_per_epoch == 0:
             self.current_epoch += 1
 
             x_train_sample, t_train_sample = self.x_train, self.y_train
-            x_test_sample, t_test_sample = self.x_val, self.y_val
+            x_test_sample, t_test_sample = self.x_valid, self.y_valid
             # testFlg True가 아니면 validation data로 시행.
-            if test_flg == True:
+            if test_flg:
                 x_test_sample, t_test_sample = self.x_test, self.y_test
 
             if self.evaluate_sample_num_per_epoch is not None:
                 t = self.evaluate_sample_num_per_epoch
                 x_train_sample, t_train_sample = self.x_train[:t], self.y_train[:t]
-                x_test_sample, t_test_sample = self.x_val[:t], self.y_val[:t]
-                if test_flg == True:
+                x_test_sample, t_test_sample = (
+                    self.x_valid[:t],
+                    self.y_valid[:t],
+                )
+                if test_flg:
                     x_test_sample, t_test_sample = self.x_test[:t], self.y_test[:t]
 
             # 변수명은 test_result이나 testFlg==False 인 경우 validation.

@@ -22,7 +22,6 @@ from models.CNN import CNN
 sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도록 설정
 
 
-
 class Custom2(CNN):
     """배치 정규화 추가된 단순한 합성곱 신경망
 
@@ -33,7 +32,7 @@ class Custom2(CNN):
     conv1 - bNorm1 - relu1 - dropout1 - pool1 - conv2 - bNorm2 - relu2 - dropout2 - pool2 - conv3 - bnorm3 - relu3 - dropout3 - pool3 - affine1 - bNorm4 -  relu4 - affine2 - softmax
     이미지 사이즈:
     48(pad1)-        -       -        -  24   -24(pad1)-       -       -          -  12   -   10  -        -       -          -  5    ->
-    
+
 
     Parameters
     ----------
@@ -48,22 +47,33 @@ class Custom2(CNN):
         self,
         input_dim=(3, 48, 48),
         conv_num=3,
-        conv_param=[{"filter_num": 10, "filter_size": 3, "pad": 1, "stride": 1},
-                    {"filter_num": 10, "filter_size": 3, "pad": 1, "stride": 1},
-                    {"filter_num": 10, "filter_size": 3, "pad": 0, "stride": 1},],
-        pool_param=[{"pool_h": 2, "pool_w":2, "stride":2, "pad": 0},
-                    {"pool_h": 2, "pool_w":2, "stride":2, "pad": 0},
-                    {"pool_h": 2, "pool_w":2, "stride":2, "pad": 0}],
+        conv_param=[
+            {"filter_num": 10, "filter_size": 3, "pad": 1, "stride": 1},
+            {"filter_num": 10, "filter_size": 3, "pad": 1, "stride": 1},
+            {"filter_num": 10, "filter_size": 3, "pad": 0, "stride": 1},
+        ],
+        pool_param=[
+            {"pool_h": 2, "pool_w": 2, "stride": 2, "pad": 0},
+            {"pool_h": 2, "pool_w": 2, "stride": 2, "pad": 0},
+            {"pool_h": 2, "pool_w": 2, "stride": 2, "pad": 0},
+        ],
         dropout_ratio=[0.3, 0.3, 0.3],
         hidden_size=100,
         output_size=43,
         weight_init_std=0.1,
         device="cpu",
+        visualize=False,
         batch_norm=True,
         dropout=True,
     ):
         super().__init__(
-            input_dim, conv_param, hidden_size, output_size, weight_init_std, device
+            input_dim,
+            conv_param,
+            hidden_size,
+            output_size,
+            weight_init_std,
+            visualize=visualize,
+            device=device,
         )
 
         filter_num = conv_param[0]["filter_num"]
@@ -163,32 +173,32 @@ class Custom2(CNN):
         # 계층 생성
         self.layers = OrderedDict()
         for i in range(1, 1 + conv_num):
-            #Conv
+            # Conv
             self.layers[f"Conv{i}"] = Convolution(
                 self.params[f"W{i}"],
                 self.params[f"b{i}"],
-                conv_param[i-1]["stride"],
-                conv_param[i-1]["pad"],
+                conv_param[i - 1]["stride"],
+                conv_param[i - 1]["pad"],
             )
-            #bNorm
+            # bNorm
             if batch_norm:
                 self.layers[f"bNorm{i}"] = BatchNormalization(
                     self.params[f"bG{i}"],
                     self.params[f"bB{i}"],
                 )
-            #Relu
+            # Relu
             self.layers[f"Relu{i}"] = Relu()
-            #Dropout
-            self.layers[f"Dropout{i}"] = Dropout(dropout_ratio= dropout_ratio[i-1])
-            #Pool
+            # Dropout
+            self.layers[f"Dropout{i}"] = Dropout(dropout_ratio=dropout_ratio[i - 1])
+            # Pool
             self.layers[f"Pool{i}"] = Pooling(
-                pool_h =pool_param[i-1]["pool_h"], 
-                pool_w=pool_param[i-1]["pool_w"], 
-                stride=pool_param[i-1]["stride"],
-                pad=pool_param[i-1]["pad"], 
+                pool_h=pool_param[i - 1]["pool_h"],
+                pool_w=pool_param[i - 1]["pool_w"],
+                stride=pool_param[i - 1]["stride"],
+                pad=pool_param[i - 1]["pad"],
             )
-        
-        #Affine1
+
+        # Affine1
         self.layers["Affine1"] = Affine(
             self.params["W4"],
             self.params["b4"],
