@@ -42,14 +42,26 @@ class CNN:
         self.device = device
         self.visualize = visualize
 
-    def predict(self, x):
+    def predict(self, x, train_flg=True, is_final=False):
         x = x.to(self.device)
+        layer_to_visualize = ["conv", "pool"]
+        x_to_visualize = OrderedDict() if is_final else None
 
-        for key, layer in self.layers.items():
-            x = layer.forward(x)
+        for layer_name, layer_value in self.layers.items():
+            if "bNorm" in layer_name:
+                x = layer_value.forward(x, train_flg=train_flg)
+            else:
+                x = layer_value.forward(x)
 
-            if self.visualize:
-                print_images(key, x)
+            if (
+                self.visualize
+                and is_final
+                and any(x.lower() in layer_name.lower() for x in layer_to_visualize)
+            ):
+                x_to_visualize[layer_name] = x[0][:10].cpu().numpy()
+
+        if self.visualize and is_final:
+            print_images(x_to_visualize)
 
         return x
 
@@ -65,7 +77,7 @@ class CNN:
         return self.last_layer.forward(y, t)
 
     # accuracy, f1score를 return 하는 함수.
-    def accuracy_f1score(self, x, t, batch_size=100):
+    def accuracy_f1score(self, x, t, batch_size=100, is_final=False):
         # x : data
         # t : label
 
@@ -88,7 +100,7 @@ class CNN:
             tt = t[i * batch_size : (i + 1) * batch_size].cpu().numpy()
 
             # 매 batch당 classification
-            y = self.predict(tx).cpu().numpy()
+            y = self.predict(tx, is_final=(is_final and i == 0)).cpu().numpy()
             y = np.argmax(y, axis=1)
 
             # confusion matrix

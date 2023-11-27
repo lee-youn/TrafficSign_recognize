@@ -126,7 +126,7 @@ class Trainer:
         # accuracy -> accuracy_f1score 변경에 따른 수정.
         # Final Test Accuracy만 test Data 사용.
         test_acc, test_f1score, self.confusion_matrix = self.network.accuracy_f1score(
-            self.x_test, self.y_test
+            self.x_test, self.y_test, is_final=True
         )
         if self.verbose:
             print("=============== Final Test Accuracy ===============")

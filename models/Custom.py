@@ -17,6 +17,7 @@ from common.layers import (
 import pickle
 from collections import OrderedDict
 
+from common.plot import print_images
 from models.CNN import CNN
 
 sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도록 설정
@@ -159,16 +160,6 @@ class Custom(CNN):
         self.layers["Relu3"] = Relu()
         self.layers["Affine2"] = Affine(self.params["W4"], self.params["b4"])
         self.last_layer = SoftmaxWithLoss()
-
-    def predict(self, x, train_flg=True):
-        x = x.to(self.device)
-        for layer_name, layer_value in self.layers.items():
-            if "bNorm" in layer_name:
-                x = layer_value.forward(x, train_flg=train_flg)
-            else:
-                x = layer_value.forward(x)
-
-        return x
 
     def gradient(self, x, t):
         """기울기를 구한다(오차역전파법).

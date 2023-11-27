@@ -1,7 +1,7 @@
 import torch
 
 from common.etc import print_gpu_info
-from common.plot import confusion_matrix, accuracy_graph
+from common.plot import confusion_matrix, accuracy_graph, loss_graph
 from common.trainer import Trainer
 from data.load_data import load_data
 from models.SimpleConvNet import SimpleConvNet
@@ -51,3 +51,5 @@ if __name__ == "__main__":
     accuracy_graph(trainer, EPOCHS)
 
     confusion_matrix(trainer)
+
+    loss_graph(trainer, EPOCHS)

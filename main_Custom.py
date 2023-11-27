@@ -55,6 +55,7 @@ if __name__ == "__main__":
         device=device,
         dropout=DROPOUT,
         batch_norm=BATCH_NORM,
+        visualize=True,
     )
 
     trainer = Trainer(
