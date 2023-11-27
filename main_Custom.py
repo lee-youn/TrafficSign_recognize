@@ -1,7 +1,7 @@
 import torch
 
 from common.etc import print_gpu_info
-from common.plot import confusion_matrix, accuracy_graph
+from common.plot import confusion_matrix, accuracy_graph, loss_graph
 from common.trainer import Trainer
 from data.load_data import load_data
 from models.Custom import Custom
@@ -17,19 +17,19 @@ if __name__ == "__main__":
     CONV_STRIDE_SIZE = 1
 
     # Hyper Parameters - Flex
-    LR = 0.00001
-    EPOCHS = 10
+    LR = 0.0001
+    EPOCHS = 30
     HIDDEN_SIZE = 100
     DROPOUT = True
     BATCH_NORM = True
 
     CONV_NUM = 2
     # conv layer 1
-    CONV1_FILTER_NUM = 10
+    CONV1_FILTER_NUM = 15
     PADDING1 = 0
 
     # conv layer 2
-    CONV2_FILTER_NUM = 10
+    CONV2_FILTER_NUM = 15
     PADDING2 = 0
 
     # Load data
@@ -72,3 +72,5 @@ if __name__ == "__main__":
     accuracy_graph(trainer, EPOCHS)
 
     confusion_matrix(trainer)
+
+    loss_graph(trainer, EPOCHS)

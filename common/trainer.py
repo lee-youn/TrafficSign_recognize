@@ -2,20 +2,18 @@ import os
 import sys
 import time
 
-sys.path.append(os.pardir)  # 부모 디렉터리의 파일을 가져올 수 있도록 설정
+sys.path.append(os.pardir)
 from common.optimizer import *
 
 
 class Trainer:
-    """신경망 훈련을 대신 해주는 클래스"""
-
     def __init__(
         self,
         network,
         datas,
         epochs=20,
         mini_batch_size=100,
-        optimizer="SGD",
+        optimizer="Adam",
         optimizer_param={"lr": 0.01},
         evaluate_sample_num_per_epoch=None,
         verbose=True,
@@ -38,11 +36,6 @@ class Trainer:
 
         # optimizer
         optimizer_class_dict = {
-            "sgd": SGD,
-            "momentum": Momentum,
-            "nesterov": Nesterov,
-            "adagrad": AdaGrad,
-            "rmsprpo": RMSprop,
             "adam": Adam,
         }
         self.optimizer = optimizer_class_dict[optimizer.lower()](**optimizer_param)

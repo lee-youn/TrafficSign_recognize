@@ -3,37 +3,6 @@ import numpy as np
 import torch
 
 
-def smooth_curve(x):
-    """손실 함수의 그래프를 매끄럽게 하기 위해 사용
-
-    참고：http://glowingpython.blogspot.jp/2012/02/convolution-with-numpy.html
-    """
-    window_len = 11
-    s = torch.r_[x[window_len - 1 : 0 : -1], x, x[-1:-window_len:-1]]
-    w = torch.kaiser_window(window_len, beta=2)
-    y = torch.convolve(w / w.sum(), s, mode="valid")
-    return y[5 : len(y) - 5]
-
-
-def shuffle_dataset(x, t):
-    """데이터셋을 뒤섞는다.
-
-    Parameters
-    ----------
-    x : 훈련 데이터
-    t : 정답 레이블
-
-    Returns
-    -------
-    x, t : 뒤섞은 훈련 데이터와 정답 레이블
-    """
-    permutation = torch.randperm(x.shape[0])
-    x = x[permutation, :] if x.ndim == 2 else x[permutation, :, :, :]
-    t = t[permutation]
-
-    return x, t
-
-
 def conv_output_size(input_size, filter_size, stride=1, pad=0):
     return (input_size + 2 * pad - filter_size) / stride + 1
 

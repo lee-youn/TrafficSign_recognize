@@ -23,7 +23,7 @@ sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도
 
 
 class Custom2(CNN):
-    """배치 정규화 추가된 단순한 합성곱 신경망
+    """Custom에서 레이어 추가한 신경망.
 
     기존 Custom
     conv1 - bNorm1 - relu1 - conv2 - bNorm2 - relu2 - pool1 - affine1 - bNorm3 - relu3 - affine2 - softmax

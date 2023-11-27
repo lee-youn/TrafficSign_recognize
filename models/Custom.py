@@ -23,7 +23,7 @@ sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도
 
 
 class Custom(CNN):
-    """배치 정규화 추가된 단순한 합성곱 신경망
+    """SimpleConvNet에 합성곱, 배치정규화, 드랍아웃 추가한 신경망.
 
     기존:
     conv - relu - pool - affine - relu - affine - softmax
@@ -33,11 +33,10 @@ class Custom(CNN):
 
     Parameters
     ----------
-    input_size : 입력 크기（MNIST의 경우엔 784）
-    hidden_size_list : 각 은닉층의 뉴런 수를 담은 리스트（e.g. [100, 100, 100]）
-    output_size : 출력 크기（MNIST의 경우엔 10）
+    input_size : 입력 크기（3 * 48 * 48）
+    output_size : 43
     활성화 함수 - 'relu'
-    weight_init_std : 가중치의 표준편차 지정（0.01）
+    weight_init_std : 0.01
     """
 
     def __init__(
