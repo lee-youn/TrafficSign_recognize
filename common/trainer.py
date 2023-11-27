@@ -2,8 +2,11 @@ import os
 import sys
 import time
 
+import numpy as np
+
+from common.optimizer import Adam
+
 sys.path.append(os.pardir)
-from common.optimizer import *
 
 
 class Trainer:

@@ -2,7 +2,7 @@
 import numpy as np
 import torch
 
-from common.functions import *
+from common.functions import sigmoid, softmax, cross_entropy_error
 from common.util import im2col, col2im
 
 
@@ -82,7 +82,7 @@ class SoftmaxWithLoss:
 
         return self.loss
 
-    def backward(self, dout=1):
+    def backward(self, dout=0):
         batch_size = self.t.shape[0]
         if self.t.size == self.y.size:  # 정답 레이블이 원-핫 인코딩 형태일 때
             dx = (self.y - self.t) / batch_size
@@ -95,7 +95,6 @@ class SoftmaxWithLoss:
 
 
 class Dropout:
-
     def __init__(self, dropout_ratio=0.5):
         self.dropout_ratio = dropout_ratio
         self.mask = None
@@ -115,7 +114,6 @@ class Dropout:
 
 
 class BatchNormalization:
-
     def __init__(self, gamma, beta, momentum=0.9, running_mean=None, running_var=None):
         self.gamma = gamma
         self.beta = beta
@@ -150,7 +148,7 @@ class BatchNormalization:
             self.running_var = torch.zeros(D, device=x.get_device())
             # 위의 두 줄 기존 np.zeros(D) 텐서 대응
 
-        if train_flg or self.batch_size == None:
+        if train_flg or self.batch_size is None:
             mu = torch.mean(x, dim=0)  # x.mean(axis=0)
             xc = x - mu
             var = torch.mean(xc**2, dim=0)  # np.mean(xc**2, axis=0)
@@ -169,7 +167,7 @@ class BatchNormalization:
                 )
         else:
             xc = x - self.running_mean
-            xn = xc / ((torch.sqrt(self.running_var + 10e-7)))  # np.sqrt
+            xn = xc / (torch.sqrt(self.running_var + 10e-7))  # np.sqrt
 
         out = self.gamma * xn + self.beta
         return out

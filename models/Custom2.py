@@ -214,16 +214,6 @@ class Custom2(CNN):
         )
         self.last_layer = SoftmaxWithLoss()
 
-    def predict(self, x, train_flg=True):
-        x = x.to(self.device)
-        for layer_name, layer_value in self.layers.items():
-            if "bNorm" in layer_name:
-                x = layer_value.forward(x, train_flg=train_flg)
-            else:
-                x = layer_value.forward(x)
-
-        return x
-
     def gradient(self, x, t):
         """기울기를 구한다(오차역전파법).
 

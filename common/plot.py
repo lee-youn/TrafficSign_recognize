@@ -64,13 +64,15 @@ def print_images(x_: OrderedDict):
     x_values = list(x_.values())
     layer_count = len(x_)
 
-    plt.figure(figsize=(20, layer_count * 3))
+    plt.figure(figsize=(20, layer_count * 5))
 
     fig = plt.figure(constrained_layout=True)
     sub_figures = fig.subfigures(nrows=layer_count, ncols=1)
 
     for row, sub_figure in enumerate(sub_figures):
-        sub_figure.suptitle(f"{x_keys[row]}: {len(x_values[row])}*{len(x_values[row])}")
+        # sub_figure.suptitle(
+        #     f"{x_keys[row]}: {len(x_values[row][0])}*{len(x_values[row][0])}"
+        # )
 
         # subplots for sub_figure
         axes = sub_figure.subplots(nrows=1, ncols=10)

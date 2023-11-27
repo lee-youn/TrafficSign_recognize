@@ -1,16 +1,17 @@
 # coding: utf-8
 import sys
 import os
-import pickle
 from collections import OrderedDict
 
-from common.layers import *
+import numpy as np
+import torch
+
+from common.layers import Convolution, Relu, Pooling, Affine, SoftmaxWithLoss
 from models.CNN import CNN
 
 sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도록 설정
 
 
-# noinspection SpellCheckingInspection,PyUnresolvedReferences,PyDefaultArgument
 class SimpleConvNet(CNN):
     """단순한 합성곱 신경망
 

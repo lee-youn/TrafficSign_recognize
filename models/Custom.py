@@ -14,10 +14,8 @@ from common.layers import (
     BatchNormalization,
     Dropout,
 )
-import pickle
 from collections import OrderedDict
 
-from common.plot import print_images
 from models.CNN import CNN
 
 sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도록 설정

@@ -4,14 +4,14 @@ import os
 import pickle
 from collections import OrderedDict
 
-from common.gradient import numerical_gradient
-from common.layers import *
+import numpy as np
+import torch
+
 from common.plot import print_images
 
 sys.path.append(os.pardir)  # 부모 디렉터리 파일을 가져올 수 있도록 설정
 
 
-# noinspection SpellCheckingInspection,PyUnresolvedReferences,PyDefaultArgument
 class CNN:
     """단순한 합성곱 신경망
 
