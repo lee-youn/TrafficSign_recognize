@@ -42,17 +42,21 @@ def print_images(key_: str, x_: torch.Tensor):
     plt.show()
 
 
-def loss_graph(trainer_, epoch_):
+def loss_graph(trainer_, epoch_: int):
     losses = trainer_.train_loss_list
-    epochs = range(epoch_)
-    minibatches = range(len(losses))
 
-    number_per_epoch = len(losses) // epoch_
+    # step_per_epoch
+    step_per_epoch = len(losses) // epoch_
     losses_per_epoch = []
     for i in range(epoch_):
         losses_per_epoch.append(
-            np.mean(losses[number_per_epoch * i : number_per_epoch * (i + 1)])
+            np.mean(losses[step_per_epoch * i : step_per_epoch * (i + 1)])
         )
+    epochs = range(epoch_)
+    # step_per_mini
+    step_per_mini = len(losses) // 100
+    losses_per_mini = losses[::step_per_mini]
+    mini_batches = range(len(losses_per_mini))
 
     plt.figure(figsize=(6, 6))
     plt.title("Train Loss", fontsize=20)
@@ -60,7 +64,7 @@ def loss_graph(trainer_, epoch_):
     plt.ylabel("loss")
 
     # losses_per_epoch
-    plt.plot(minibatches, losses)
+    plt.plot(mini_batches, losses_per_mini)
     ax2 = plt.twiny()
     ax2.plot(epochs, losses_per_epoch, "ro--", markevery=epoch_ // 5)
 

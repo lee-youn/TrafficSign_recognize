@@ -22,9 +22,7 @@ if __name__ == "__main__":
     HIDDEN_SIZE = 100
 
     # Load data
-    x_train, y_train, x_validation, y_validation, x_test, y_test = load_data(
-        N_=N, print_=True
-    )
+    datas = load_data(N_=N, print_=False)
 
     network = SimpleConvNet(
         conv_param={
@@ -40,12 +38,7 @@ if __name__ == "__main__":
 
     trainer = Trainer(
         network=network,
-        x_train=x_train,
-        y_train=y_train,
-        x_test=x_test,
-        y_test=y_test,
-        x_validation=x_validation,
-        y_validation=y_validation,
+        datas=datas,
         epochs=EPOCHS,
         mini_batch_size=BATCH_SIZE,
         optimizer="Adam",

@@ -34,10 +34,17 @@ class SimpleConvNet(CNN):
         hidden_size=100,
         output_size=43,
         weight_init_std=0.1,
+        visualize=False,
         device="cpu",
     ):
         super().__init__(
-            input_dim, conv_param, hidden_size, output_size, weight_init_std, device
+            input_dim,
+            conv_param,
+            hidden_size,
+            output_size,
+            weight_init_std,
+            visualize=visualize,
+            device=device,
         )
 
         # 변수 정리

@@ -51,10 +51,17 @@ class Custom(CNN):
         weight_init_std=0.1,
         device="cpu",
         batch_norm=False,
+        visualize=False,
         dropout=False,
     ):
         super().__init__(
-            input_dim, conv1_param, hidden_size, output_size, weight_init_std, device
+            input_dim,
+            conv1_param,
+            hidden_size,
+            output_size,
+            weight_init_std,
+            visualize=visualize,
+            device=device,
         )
 
         filter_num = conv1_param["filter_num"]
