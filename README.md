@@ -1,3 +1,3 @@
-# mlp
+# Traffic Sign recognize project
 
-data폴더 안에 input 파일을 직접 넣어주세요.
+cnn 기반 교통 표지판 인식 프로젝트
